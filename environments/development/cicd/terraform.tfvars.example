@@ -1,0 +1,4 @@
+environment    = "development"
+state_bucket   = "travelhub-terraform-state-<AWS_ACCOUNT_ID>"
+github_repo_id = "owner/repo"
+branch_name    = "develop"
