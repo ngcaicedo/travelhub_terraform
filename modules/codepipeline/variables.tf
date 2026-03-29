@@ -33,3 +33,13 @@ variable "codebuild_project_name" {
   description = "Name of the CodeBuild project for the Build stage"
   type        = string
 }
+
+variable "ecs_cluster_name" {
+  description = "Name of the ECS cluster for deployment"
+  type        = string
+}
+
+variable "ecs_service_name" {
+  description = "Name of the ECS service to deploy to"
+  type        = string
+}
