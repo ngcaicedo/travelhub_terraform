@@ -1,0 +1,29 @@
+# Terraform — directorio de plugins, módulos cacheados y metadatos locales
+**/.terraform/
+
+# Archivos de estado (usar backend remoto; nunca commitear estado local)
+*.tfstate
+*.tfstate.*
+
+# Planes guardados como binario
+*.tfplan
+
+# Logs de crash del CLI
+crash.log
+crash.*.log
+
+# Variables con datos sensibles (usar *.example.tfvars o similares para plantillas)
+*.tfvars
+*.tfvars.json
+
+# Overrides locales
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Configuración del CLI de Terraform (puede contener credenciales)
+.terraformrc
+terraform.rc
+
+# NO ignorar: .terraform.lock.hcl (convención: versionar en el repo para builds reproducibles)

@@ -3,8 +3,7 @@ resource "aws_s3_bucket" "artifacts" {
   force_destroy = true
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-${var.service_name}-pipeline-artifacts"
-    Environment = var.environment
+    Name = "${var.project_name}-${var.environment}-${var.service_name}-pipeline-artifacts"
   }
 }
 
@@ -108,8 +107,7 @@ resource "aws_codepipeline" "this" {
   }
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-${var.service_name}"
-    Project     = var.project_name
-    Environment = var.environment
+    Name    = "${var.project_name}-${var.environment}-${var.service_name}"
+    Project = var.project_name
   }
 }

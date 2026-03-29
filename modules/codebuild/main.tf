@@ -15,8 +15,7 @@ resource "aws_iam_role" "codebuild" {
   })
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-${var.service_name}-codebuild-role"
-    Environment = var.environment
+    Name = "${var.project_name}-${var.environment}-${var.service_name}-codebuild-role"
   }
 }
 
@@ -110,8 +109,7 @@ resource "aws_codebuild_project" "this" {
   }
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-${var.service_name}"
-    Project     = var.project_name
-    Environment = var.environment
+    Name    = "${var.project_name}-${var.environment}-${var.service_name}"
+    Project = var.project_name
   }
 }
