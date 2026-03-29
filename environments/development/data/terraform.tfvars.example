@@ -1,0 +1,7 @@
+environment         = "development"
+state_bucket        = "travelhub-terraform-state-<AWS_ACCOUNT_ID>"
+db_password         = "CHANGE_ME"
+jwt_secret_key      = "CHANGE_ME"
+internal_api_key    = "CHANGE_ME"
+skip_final_snapshot = true
+publicly_accessible = true
