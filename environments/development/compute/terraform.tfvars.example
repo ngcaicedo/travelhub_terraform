@@ -1,0 +1,3 @@
+environment   = "development"
+state_bucket  = "travelhub-terraform-state-<AWS_ACCOUNT_ID>"
+desired_count = 1
