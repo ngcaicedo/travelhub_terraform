@@ -136,6 +136,11 @@ module "security_service" {
     { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
     { name = "JWT_SECRET_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:JWT_SECRET_KEY::" },
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
+    { name = "SMTP_HOST", valueFrom = "${local.data_state.security_config_secret_arn}:SMTP_HOST::" },
+    { name = "SMTP_PORT", valueFrom = "${local.data_state.security_config_secret_arn}:SMTP_PORT::" },
+    { name = "SMTP_USER", valueFrom = "${local.data_state.security_config_secret_arn}:SMTP_USER::" },
+    { name = "SMTP_PASSWORD", valueFrom = "${local.data_state.security_config_secret_arn}:SMTP_PASSWORD::" },
+    { name = "SMTP_FROM", valueFrom = "${local.data_state.security_config_secret_arn}:SMTP_FROM::" },
   ]
 
   project_name = var.project_name
