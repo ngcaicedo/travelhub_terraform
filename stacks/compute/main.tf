@@ -246,6 +246,7 @@ module "users_service" {
     { name = "DB_SCHEMA", value = "users_schema" },
     { name = "DB_ECHO", value = "False" },
     { name = "RDS_PORT", value = "5432" },
+    { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
   ]
 
   secrets = [
@@ -279,6 +280,7 @@ module "security_service" {
     { name = "DB_ECHO", value = "False" },
     { name = "RDS_PORT", value = "5432" },
     { name = "USERS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
   ]
 
   secrets = [
@@ -318,6 +320,7 @@ module "reservations_service" {
     { name = "DB_SCHEMA", value = "reservations_schema" },
     { name = "DB_ECHO", value = "False" },
     { name = "RDS_PORT", value = "5432" },
+    { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
     { name = "RESERVATION_SCHEDULER_ENABLED", value = "true" },
     { name = "RESERVATION_SCHEDULER_DELAY_MINUTES", value = "15" },
     { name = "AWS_REGION", value = var.region },
@@ -357,6 +360,7 @@ module "payments_service" {
     { name = "DB_SCHEMA", value = "payments_schema" },
     { name = "DB_ECHO", value = "False" },
     { name = "RDS_PORT", value = "5432" },
+    { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
     { name = "NOTIFICATIONS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
     { name = "RESERVATIONS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
   ]
@@ -432,6 +436,7 @@ module "properties_service" {
     { name = "DB_SCHEMA", value = "properties_schema" },
     { name = "DB_ECHO", value = "False" },
     { name = "RDS_PORT", value = "5432" },
+    { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
   ]
 
   secrets = [
@@ -463,6 +468,7 @@ module "search_service" {
     { name = "DB_SCHEMA", value = "search_schema" },
     { name = "DB_ECHO", value = "False" },
     { name = "RDS_PORT", value = "5432" },
+    { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
     { name = "REDIS_HOST", value = local.data_state.redis_host },
     { name = "REDIS_PORT", value = tostring(local.data_state.redis_port) },
     { name = "REDIS_DB", value = "0" },
