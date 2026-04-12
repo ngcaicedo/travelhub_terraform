@@ -60,3 +60,37 @@ variable "internal_api_key" {
   type      = string
   sensitive = true
 }
+
+variable "smtp_host" {
+  type = string
+}
+
+variable "smtp_port" {
+  type    = string
+  default = "587"
+}
+
+variable "smtp_user" {
+  type = string
+}
+
+variable "smtp_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "smtp_from" {
+  type = string
+}
+
+variable "stripe_secret_key" {
+  type      = string
+  sensitive = true
+  default   = ""
+}
+
+variable "payment_integrity_secret" {
+  type      = string
+  sensitive = true
+  default   = ""
+}
