@@ -13,8 +13,16 @@ variable "environment" {
 }
 
 variable "repository_names" {
-  type    = list(string)
-  default = ["travelhub-users", "travelhub-security"]
+  type = list(string)
+  default = [
+    "travelhub-users",
+    "travelhub-security",
+    "travelhub-reservations",
+    "travelhub-payments",
+    "travelhub-notifications",
+    "travelhub-properties",
+    "travelhub-search",
+  ]
 }
 
 variable "keep_tags_number" {

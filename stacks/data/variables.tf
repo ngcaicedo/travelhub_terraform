@@ -84,3 +84,15 @@ variable "smtp_password" {
 variable "smtp_from" {
   type = string
 }
+
+variable "stripe_secret_key" {
+  type      = string
+  sensitive = true
+  default   = ""
+}
+
+variable "payment_integrity_secret" {
+  type      = string
+  sensitive = true
+  default   = ""
+}

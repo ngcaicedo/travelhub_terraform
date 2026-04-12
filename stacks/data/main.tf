@@ -50,3 +50,43 @@ module "security_config" {
   project_name = var.project_name
   environment  = var.environment
 }
+
+module "notifications_config" {
+  source = "../../modules/secrets_manager"
+
+  secret_name = "${var.project_name}/${var.environment}/notifications/config"
+  secret_values = {
+    SMTP_HOST     = var.smtp_host
+    SMTP_PORT     = var.smtp_port
+    SMTP_USER     = var.smtp_user
+    SMTP_PASSWORD = var.smtp_password
+    SMTP_FROM     = var.smtp_from
+  }
+
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+module "payments_config" {
+  source = "../../modules/secrets_manager"
+
+  secret_name = "${var.project_name}/${var.environment}/payments/config"
+  secret_values = {
+    STRIPE_SECRET_KEY        = var.stripe_secret_key
+    PAYMENT_INTEGRITY_SECRET = var.payment_integrity_secret
+  }
+
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+module "elasticache" {
+  source = "../../modules/elasticache"
+
+  cluster_name      = "${var.project_name}-${var.environment}"
+  subnet_ids        = data.terraform_remote_state.networking.outputs.subnet_ids
+  security_group_id = data.terraform_remote_state.networking.outputs.elasticache_sg_id
+
+  project_name = var.project_name
+  environment  = var.environment
+}
