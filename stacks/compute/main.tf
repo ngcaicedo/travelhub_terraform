@@ -169,11 +169,6 @@ resource "aws_iam_role" "scheduler_invocation" {
       }
     }]
   })
-
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
 }
 
 resource "aws_iam_role_policy" "scheduler_invocation_lambda" {
@@ -204,11 +199,6 @@ resource "aws_iam_role" "reservations_task" {
       }
     }]
   })
-
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
 }
 
 resource "aws_iam_role_policy" "reservations_task_scheduler" {

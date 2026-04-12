@@ -60,9 +60,7 @@ resource "aws_cloudwatch_log_group" "lambda" {
   retention_in_days = 14
 
   tags = {
-    Name        = "/aws/lambda/${var.function_name}"
-    Project     = var.project_name
-    Environment = var.environment
+    Name = "/aws/lambda/${var.function_name}"
   }
 }
 
@@ -77,11 +75,6 @@ resource "aws_iam_role" "lambda_execution" {
       Principal = { Service = "lambda.amazonaws.com" }
     }]
   })
-
-  tags = {
-    Project     = var.project_name
-    Environment = var.environment
-  }
 }
 
 resource "aws_iam_role_policy" "lambda_logs" {
