@@ -15,3 +15,12 @@ data "terraform_remote_state" "compute" {
     region = var.region
   }
 }
+
+data "terraform_remote_state" "frontend" {
+  backend = "s3"
+  config = {
+    bucket = var.state_bucket
+    key    = "${var.environment}/frontend/terraform.tfstate"
+    region = var.region
+  }
+}

@@ -7,9 +7,9 @@ STACK_DIR = stacks/$(STACK)
 ENV_DIR = environments/$(ENV)/$(STACK)
 
 # Stack order for bringing infra up (dependencies first)
-UP_ORDER   = networking registry data compute cicd
+UP_ORDER   = networking registry data compute frontend cicd
 # Reverse order for tear down (dependents first)
-DOWN_ORDER = cicd compute data registry networking
+DOWN_ORDER = cicd frontend compute data registry networking
 
 # Modules that generate local artifacts (used by validate-modules and clean)
 MODULES_WITH_ARTIFACTS = lambda
@@ -20,7 +20,7 @@ help:
 	@echo "Usage: make <target> ENV=<environment> STACK=<stack>"
 	@echo ""
 	@echo "Environments: development, production"
-	@echo "Stacks:       networking, registry, data, compute, cicd"
+  @echo "Stacks:       networking, registry, data, compute, frontend, cicd"
 	@echo "Modules:      alb, codebuild, codepipeline, ecr, ecs_cluster, ecs_service,"
 	@echo "              elasticache, lambda, rds, secrets_manager, security_groups"
 	@echo ""
@@ -32,8 +32,8 @@ help:
 	@echo "  make fmt              - Format all terraform files"
 	@echo "  make validate         - Validate all stacks (needs init first)"
 	@echo "  make validate-modules - Validate all reusable modules"
-	@echo "  make up               - Init+apply ALL stacks in order (networking->registry->data->compute->cicd)"
-	@echo "  make down             - Destroy ALL stacks in reverse order (cicd->compute->data->registry->networking)"
+	@echo "  make up               - Init+apply ALL stacks in order (networking->registry->data->compute->frontend->cicd)"
+	@echo "  make down             - Destroy ALL stacks in reverse order (cicd->frontend->compute->data->registry->networking)"
 	@echo "  make clean            - Remove generated artifacts (lambda zip, .terraform.lock.hcl overrides, etc.)"
 	@echo ""
 	@echo "Examples:"
@@ -66,7 +66,7 @@ fmt:
 	terraform fmt -recursive .
 
 validate:
-	@for stack in networking registry data compute cicd; do \
+	@for stack in networking registry data compute frontend cicd; do \
 		echo "Validating stack: $$stack..."; \
 		cd stacks/$$stack && terraform validate 2>/dev/null || echo "  (needs init first)"; \
 		cd ../..; \

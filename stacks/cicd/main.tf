@@ -1,6 +1,7 @@
 locals {
   registry = data.terraform_remote_state.registry.outputs
   compute  = data.terraform_remote_state.compute.outputs
+  frontend = data.terraform_remote_state.frontend.outputs
 }
 
 resource "aws_codestarconnections_connection" "github" {
@@ -190,4 +191,29 @@ module "pipeline_search" {
   codebuild_project_name  = module.codebuild_search.project_name
   ecs_cluster_name        = local.compute.cluster_name
   ecs_service_name        = local.compute.search_service_name
+}
+
+# --- Frontend (S3 + CloudFront) ---
+
+module "codebuild_frontend" {
+  source = "../../modules/codebuild_frontend"
+
+  project_name             = var.project_name
+  environment              = var.environment
+  region                   = var.region
+  buildspec_path           = "buildspec.yml"
+  frontend_bucket_name     = local.frontend.frontend_bucket_name
+  frontend_distribution_id = local.frontend.frontend_distribution_id
+  api_cloudfront_url       = local.frontend.api_cloudfront_url
+}
+
+module "pipeline_frontend" {
+  source = "../../modules/codepipeline_frontend"
+
+  project_name            = var.project_name
+  environment             = var.environment
+  codestar_connection_arn = aws_codestarconnections_connection.github.arn
+  github_repo_id          = var.frontend_github_repo_id
+  branch_name             = var.branch_name
+  codebuild_project_name  = module.codebuild_frontend.project_name
 }

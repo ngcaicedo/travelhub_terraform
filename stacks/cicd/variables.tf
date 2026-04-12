@@ -26,3 +26,8 @@ variable "branch_name" {
   type        = string
   default     = "main"
 }
+
+variable "frontend_github_repo_id" {
+  description = "GitHub repo for the frontend in owner/repo format"
+  type        = string
+}

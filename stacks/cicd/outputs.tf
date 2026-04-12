@@ -57,3 +57,11 @@ output "codebuild_properties" {
 output "codebuild_search" {
   value = module.codebuild_search.project_name
 }
+
+output "pipeline_frontend" {
+  value = module.pipeline_frontend.pipeline_name
+}
+
+output "codebuild_frontend" {
+  value = module.codebuild_frontend.project_name
+}
