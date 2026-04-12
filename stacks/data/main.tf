@@ -40,6 +40,11 @@ module "security_config" {
   secret_values = {
     JWT_SECRET_KEY   = var.jwt_secret_key
     INTERNAL_API_KEY = var.internal_api_key
+    SMTP_HOST        = var.smtp_host
+    SMTP_PORT        = var.smtp_port
+    SMTP_USER        = var.smtp_user
+    SMTP_PASSWORD    = var.smtp_password
+    SMTP_FROM        = var.smtp_from
   }
 
   project_name = var.project_name

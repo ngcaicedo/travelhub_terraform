@@ -62,7 +62,8 @@ variable "internal_api_key" {
 }
 
 variable "smtp_host" {
-  type = string
+  type    = string
+  default = "smtp.gmail.com"
 }
 
 variable "smtp_port" {
@@ -71,7 +72,8 @@ variable "smtp_port" {
 }
 
 variable "smtp_user" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "smtp_password" {
