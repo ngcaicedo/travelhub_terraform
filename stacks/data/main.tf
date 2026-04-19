@@ -90,3 +90,18 @@ module "elasticache" {
   project_name = var.project_name
   environment  = var.environment
 }
+
+module "messaging" {
+  source = "../../modules/messaging"
+
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+module "email" {
+  source = "../../modules/email"
+
+  project_name = var.project_name
+  environment  = var.environment
+  sender_email = var.ses_sender_email
+}
