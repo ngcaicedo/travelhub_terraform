@@ -100,4 +100,5 @@ variable "payment_integrity_secret" {
 variable "ses_sender_email" {
   description = "Correo remitente verificado en SES (ej: no-reply@travelhub-dev.com)"
   type        = string
+  default     = ""
 }
