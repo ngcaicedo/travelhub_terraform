@@ -54,13 +54,13 @@ init:
 	cd $(STACK_DIR) && terraform init -backend-config=../../$(ENV_DIR)/backend.tfvars
 
 plan:
-	cd $(STACK_DIR) && terraform plan -var-file=../../$(ENV_DIR)/terraform.tfvars
+	cd $(STACK_DIR) && terraform plan -var-file=../../$(ENV_DIR)/terraform.tfvars $(ARGS)
 
 apply:
-	cd $(STACK_DIR) && terraform apply -var-file=../../$(ENV_DIR)/terraform.tfvars
+	cd $(STACK_DIR) && terraform apply -var-file=../../$(ENV_DIR)/terraform.tfvars $(ARGS)
 
 destroy:
-	cd $(STACK_DIR) && terraform destroy -var-file=../../$(ENV_DIR)/terraform.tfvars
+	cd $(STACK_DIR) && terraform destroy -var-file=../../$(ENV_DIR)/terraform.tfvars $(ARGS)
 
 fmt:
 	terraform fmt -recursive .

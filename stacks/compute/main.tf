@@ -363,6 +363,14 @@ module "payments_service" {
     { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
     { name = "NOTIFICATIONS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
     { name = "RESERVATIONS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "ENFORCE_TLS_HEADER", value = "False" },
+    { name = "PAYMENTS_COMPLIANCE_MODE", value = "False" },
+    { name = "PAYMENT_PROVIDER", value = "fake_stripe" },
+    { name = "PAYMENT_INTEGRITY_SECRET", value = "travelhub-payments-secret-change-in-prod" },
+    { name = "PAYMENTS_DATA_ENCRYPTION_KEY", value = "travelhub-payments-encryption-key-change-in-prod" },
+    { name = "STRIPE_SECRET_KEY", value = "" },
+    { name = "STRIPE_PUBLISHABLE_KEY", value = "" },
+    { name = "STRIPE_WEBHOOK_SECRET", value = "" },
   ]
 
   secrets = [
@@ -371,8 +379,6 @@ module "payments_service" {
     { name = "RDS_PASSWORD", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_PASSWORD::" },
     { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
-    { name = "STRIPE_SECRET_KEY", valueFrom = "${local.data_state.payments_config_secret_arn}:STRIPE_SECRET_KEY::" },
-    { name = "PAYMENT_INTEGRITY_SECRET", valueFrom = "${local.data_state.payments_config_secret_arn}:PAYMENT_INTEGRITY_SECRET::" },
   ]
 
   project_name = var.project_name

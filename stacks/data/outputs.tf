@@ -29,3 +29,27 @@ output "redis_host" {
 output "redis_port" {
   value = module.elasticache.redis_port
 }
+
+output "notifications_queue_url" {
+  value = module.messaging.notifications_queue_url
+}
+
+output "notifications_queue_arn" {
+  value = module.messaging.notifications_queue_arn
+}
+
+output "notifications_dlq_url" {
+  value = module.messaging.notifications_dlq_url
+}
+
+output "notifications_dlq_arn" {
+  value = module.messaging.notifications_dlq_arn
+}
+
+output "ses_sender_email" {
+  value = module.email.sender_email
+}
+
+output "ses_sender_identity_arn" {
+  value = module.email.sender_identity_arn
+}
