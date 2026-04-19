@@ -17,8 +17,3 @@ variable "notifications_visibility_timeout_seconds" {
   type        = number
   default     = 60
 }
-
-variable "reservations_visibility_timeout_seconds" {
-  type    = number
-  default = 60
-}

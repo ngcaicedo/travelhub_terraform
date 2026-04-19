@@ -172,3 +172,61 @@ La primera vez, la conexión GitHub en AWS puede quedar en estado **Pending** ha
 - [ ] `buildspec.yml` y Dockerfile en el repo de la app bajo `services/<servicio>/`.
 
 > **Nota:** El módulo `ecs_service` ignora cambios en `task_definition` y `desired_count` en el ciclo de vida del recurso. Las actualizaciones de imagen las maneja el pipeline, no `terraform apply`.
+
+---
+
+## SES — Verificar destinatarios en sandbox
+
+El módulo `modules/email` crea la identidad del **remitente** (`ses_sender_email`) y le manda un link de verificación. Mientras la cuenta AWS esté en **SES sandbox**, también hay que verificar cada **destinatario** antes de poder enviarle correo (de lo contrario SES rechaza el envío con `MessageRejected: Email address is not verified`).
+
+### Verificar un destinatario
+
+```bash
+aws ses verify-email-identity \
+  --email-address <correo-destinatario> \
+  --region us-east-1
+```
+
+AWS envía un link de confirmación al buzón. Al hacer clic, la identidad queda en estado `Success` y ya puede recibir correos.
+
+### Consultar el estado de verificación
+
+```bash
+aws ses get-identity-verification-attributes \
+  --identities <correo-destinatario> \
+  --region us-east-1
+```
+
+Devuelve `"VerificationStatus": "Success"` cuando la identidad está lista.
+
+### Listar todas las identidades verificadas
+
+```bash
+aws ses list-identities --identity-type EmailAddress --region us-east-1
+```
+
+### Quitar una identidad
+
+```bash
+aws ses delete-identity --identity <correo> --region us-east-1
+```
+
+### Truco útil en desarrollo
+
+Gmail trata `cuenta+algo@gmail.com` como la misma bandeja, pero SES lo registra como identidad distinta. Así puedes verificar varios "usuarios" contra el mismo inbox:
+
+```bash
+aws ses verify-email-identity --email-address cuenta+viajero1@gmail.com --region us-east-1
+aws ses verify-email-identity --email-address cuenta+viajero2@gmail.com --region us-east-1
+```
+
+### Salir del sandbox
+
+Para no tener que verificar cada destinatario, hay que solicitar acceso a producción:
+
+1. Consola AWS → **Amazon SES** → **Account dashboard**.
+2. Botón **Request production access**.
+3. Llenar caso de uso (tipo de correo, volumen estimado, proceso anti-abuse).
+4. AWS responde típicamente en < 24h.
+
+Una vez aprobado, SES acepta cualquier destinatario sin verificación previa.
