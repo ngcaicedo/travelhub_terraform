@@ -47,8 +47,9 @@ variable "security_group_id" {
 }
 
 variable "target_group_arn" {
-  description = "ALB target group ARN"
+  description = "ALB target group ARN. Set to null for worker services without an ALB."
   type        = string
+  default     = null
 }
 
 variable "execution_role_arn" {

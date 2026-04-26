@@ -44,6 +44,10 @@ resource "aws_ecs_task_definition" "this" {
   }
 }
 
+locals {
+  has_load_balancer = var.target_group_arn != null && var.target_group_arn != ""
+}
+
 resource "aws_ecs_service" "this" {
   name            = "${var.project_name}-${var.environment}-${var.service_name}"
   cluster         = var.cluster_id
@@ -57,13 +61,16 @@ resource "aws_ecs_service" "this" {
     assign_public_ip = true
   }
 
-  load_balancer {
-    target_group_arn = var.target_group_arn
-    container_name   = var.service_name
-    container_port   = var.container_port
+  dynamic "load_balancer" {
+    for_each = local.has_load_balancer ? [1] : []
+    content {
+      target_group_arn = var.target_group_arn
+      container_name   = var.service_name
+      container_port   = var.container_port
+    }
   }
 
-  health_check_grace_period_seconds = 60
+  health_check_grace_period_seconds = local.has_load_balancer ? 60 : null
 
   tags = {
     Name = "${var.project_name}-${var.environment}-${var.service_name}"
