@@ -80,11 +80,17 @@ module "alb" {
   environment  = var.environment
 
   services = {
+    # Cada servicio enumera explícitamente sus paths internal — ya no usamos
+    # el comodín "/api/v1/internal*" para evitar colisiones cross-servicio.
     users = {
       port              = 8000
       health_check_path = "/health"
       priority          = 100
-      path_patterns     = ["/api/v1/users*", "/api/v1/internal*"]
+      path_patterns = [
+        "/api/v1/users*",
+        "/api/v1/internal/users*",
+        "/api/v1/internal/verify-credentials",
+      ]
     }
     security = {
       port              = 8000
@@ -95,26 +101,41 @@ module "alb" {
     reservations = {
       port              = 8000
       health_check_path = "/health"
-      priority          = 300
-      path_patterns     = ["/api/v1/reservations*"]
+      priority          = 50
+      path_patterns = [
+        "/api/v1/reservations*",
+        "/api/v1/internal/reservations*",
+        "/api/v1/hotel/reservations*",
+      ]
     }
     payments = {
       port              = 8000
       health_check_path = "/health"
-      priority          = 400
-      path_patterns     = ["/api/v1/payments*"]
+      priority          = 60
+      path_patterns = [
+        "/api/v1/payments*",
+        "/api/v1/internal/payments*",
+        "/api/v1/internal/refunds",
+        "/api/v1/internal/payment-processing*",
+        "/api/v1/internal/reservation-confirmations*",
+      ]
     }
     notifications = {
       port              = 8000
       health_check_path = "/health"
-      priority          = 500
-      path_patterns     = ["/api/v1/notifications*"]
+      priority          = 70
+      path_patterns = [
+        "/api/v1/notifications*",
+        "/api/v1/internal/payment-confirmations",
+        "/api/v1/internal/reservation-updates",
+        "/api/v1/internal/reservation-events",
+      ]
     }
     properties = {
       port              = 8000
       health_check_path = "/health"
-      priority          = 600
-      path_patterns     = ["/api/v1/properties*"]
+      priority          = 80
+      path_patterns     = ["/api/v1/properties*", "/api/v1/internal/properties*"]
     }
     search = {
       port              = 8000
@@ -137,13 +158,6 @@ module "reservation_checker_lambda" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
-}
-
-# Importa la Lambda existente creada manualmente en AWS.
-# En el primer `apply`, Terraform tomará control del recurso sin recrearlo.
-import {
-  to = module.reservation_checker_lambda.aws_lambda_function.this
-  id = "reservation-checker"
 }
 
 resource "aws_scheduler_schedule_group" "reservations" {
@@ -226,6 +240,106 @@ resource "aws_iam_role_policy" "reservations_task_scheduler" {
 }
 
 # ---------------------------------------------------------------------------
+# Task roles for SQS / SES (payments dispatches, notifications API + worker)
+# ---------------------------------------------------------------------------
+
+data "aws_iam_policy_document" "ecs_task_assume" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+}
+
+# payments: publica eventos en la cola de notificaciones
+resource "aws_iam_role" "payments_task" {
+  name               = "${var.project_name}-${var.environment}-payments-task"
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume.json
+}
+
+resource "aws_iam_role_policy" "payments_task_sqs" {
+  name = "${var.project_name}-${var.environment}-payments-sqs-policy"
+  role = aws_iam_role.payments_task.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "sqs:SendMessage",
+        "sqs:GetQueueAttributes",
+      ]
+      Resource = local.data_state.notifications_queue_arn
+    }]
+  })
+}
+
+# notifications API: puede despachar correos vía SES (ver assembly.get_email_sender)
+resource "aws_iam_role" "notifications_task" {
+  name               = "${var.project_name}-${var.environment}-notifications-task"
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume.json
+}
+
+resource "aws_iam_role_policy" "notifications_task_ses" {
+  name = "${var.project_name}-${var.environment}-notifications-ses-policy"
+  role = aws_iam_role.notifications_task.id
+
+  # Resource = "*" porque en SES sandbox la operación SendRawEmail valida IAM
+  # tanto sobre la identity del Source como sobre la del Destination
+  # (que también debe estar verified). Restringir solo al sender provoca
+  # AccessDenied al mandar a destinatarios verified que no son el sender.
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "ses:SendEmail",
+        "ses:SendRawEmail",
+      ]
+      Resource = "*"
+    }]
+  })
+}
+
+# notifications-worker: consume SQS y envía SES
+resource "aws_iam_role" "notifications_worker_task" {
+  name               = "${var.project_name}-${var.environment}-notifications-worker-task"
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_assume.json
+}
+
+resource "aws_iam_role_policy" "notifications_worker_task_policy" {
+  name = "${var.project_name}-${var.environment}-notifications-worker-policy"
+  role = aws_iam_role.notifications_worker_task.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes",
+          "sqs:ChangeMessageVisibility",
+        ]
+        Resource = local.data_state.notifications_queue_arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail",
+        ]
+        Resource = "*"
+      },
+    ]
+  })
+}
+
+# ---------------------------------------------------------------------------
 # ECS Services
 # ---------------------------------------------------------------------------
 
@@ -247,6 +361,7 @@ module "users_service" {
     { name = "DB_ECHO", value = "False" },
     { name = "RDS_PORT", value = "5432" },
     { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
+    { name = "DEMO_SEED_ENABLED", value = "true" },
   ]
 
   secrets = [
@@ -281,6 +396,7 @@ module "security_service" {
     { name = "RDS_PORT", value = "5432" },
     { name = "USERS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
     { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
+    { name = "DEMO_SEED_ENABLED", value = "true" },
   ]
 
   secrets = [
@@ -317,6 +433,7 @@ module "reservations_service" {
   task_role_arn      = aws_iam_role.reservations_task.arn
 
   environment_variables = [
+    { name = "ENV", value = "production" },
     { name = "DB_SCHEMA", value = "reservations_schema" },
     { name = "DB_ECHO", value = "False" },
     { name = "RDS_PORT", value = "5432" },
@@ -328,6 +445,10 @@ module "reservations_service" {
     { name = "SCHEDULER_ROLE_ARN", value = aws_iam_role.scheduler_invocation.arn },
     { name = "SCHEDULER_GROUP_NAME", value = aws_scheduler_schedule_group.reservations.name },
     { name = "API_BASE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "USERS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "PROPERTIES_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "PAYMENTS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "NOTIFICATIONS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
   ]
 
   secrets = [
@@ -336,6 +457,7 @@ module "reservations_service" {
     { name = "RDS_PASSWORD", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_PASSWORD::" },
     { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
+    { name = "JWT_SECRET_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:JWT_SECRET_KEY::" },
   ]
 
   project_name = var.project_name
@@ -355,6 +477,7 @@ module "payments_service" {
   security_group_id  = local.networking.ecs_sg_id
   target_group_arn   = module.alb.target_group_arns["payments"]
   execution_role_arn = aws_iam_role.ecs_task_execution.arn
+  task_role_arn      = aws_iam_role.payments_task.arn
 
   environment_variables = [
     { name = "DB_SCHEMA", value = "payments_schema" },
@@ -363,6 +486,7 @@ module "payments_service" {
     { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
     { name = "NOTIFICATIONS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
     { name = "RESERVATIONS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "PROPERTIES_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
     { name = "ENFORCE_TLS_HEADER", value = "False" },
     { name = "PAYMENTS_COMPLIANCE_MODE", value = "False" },
     { name = "PAYMENT_PROVIDER", value = "fake_stripe" },
@@ -371,6 +495,9 @@ module "payments_service" {
     { name = "STRIPE_SECRET_KEY", value = "" },
     { name = "STRIPE_PUBLISHABLE_KEY", value = "" },
     { name = "STRIPE_WEBHOOK_SECRET", value = "" },
+    { name = "AWS_REGION", value = var.region },
+    { name = "NOTIFICATIONS_DISPATCH_MODE", value = "sqs" },
+    { name = "NOTIFICATIONS_QUEUE_URL", value = local.data_state.notifications_queue_url },
   ]
 
   secrets = [
@@ -398,6 +525,7 @@ module "notifications_service" {
   security_group_id  = local.networking.ecs_sg_id
   target_group_arn   = module.alb.target_group_arns["notifications"]
   execution_role_arn = aws_iam_role.ecs_task_execution.arn
+  task_role_arn      = aws_iam_role.notifications_task.arn
 
   environment_variables = [
     { name = "DB_SCHEMA", value = "notifications_schema" },
@@ -405,6 +533,11 @@ module "notifications_service" {
     { name = "RDS_PORT", value = "5432" },
     { name = "PAYMENTS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
     { name = "USERS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "SERVICE_MODE", value = "api" },
+    { name = "AWS_REGION", value = var.region },
+    { name = "NOTIFICATIONS_QUEUE_URL", value = local.data_state.notifications_queue_url },
+    { name = "SES_FROM_ADDRESS", value = local.data_state.ses_sender_email },
+    { name = "SES_REGION", value = var.region },
   ]
 
   secrets = [
@@ -450,6 +583,53 @@ module "properties_service" {
     { name = "RDS_USERNAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_USERNAME::" },
     { name = "RDS_PASSWORD", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_PASSWORD::" },
     { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
+  ]
+
+  project_name = var.project_name
+  environment  = var.environment
+  region       = var.region
+}
+
+# Worker que consume la cola SQS y despacha correos vía SES.
+# No se registra en el ALB (servicio interno).
+module "notifications_worker_service" {
+  source = "../../modules/ecs_service"
+
+  service_name       = "notifications-worker"
+  cluster_id         = module.ecs_cluster.cluster_id
+  container_port     = 8000
+  ecr_image_url      = "${local.registry.repository_urls["travelhub-notifications"]}:latest"
+  desired_count      = 1
+  subnet_ids         = local.networking.subnet_ids
+  security_group_id  = local.networking.ecs_sg_id
+  target_group_arn   = null
+  execution_role_arn = aws_iam_role.ecs_task_execution.arn
+  task_role_arn      = aws_iam_role.notifications_worker_task.arn
+
+  environment_variables = [
+    { name = "SERVICE_MODE", value = "worker" },
+    { name = "DB_SCHEMA", value = "notifications_schema" },
+    { name = "DB_ECHO", value = "False" },
+    { name = "RDS_PORT", value = "5432" },
+    { name = "AWS_REGION", value = var.region },
+    { name = "NOTIFICATIONS_QUEUE_URL", value = local.data_state.notifications_queue_url },
+    { name = "SES_FROM_ADDRESS", value = local.data_state.ses_sender_email },
+    { name = "SES_REGION", value = var.region },
+    { name = "PAYMENTS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "USERS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+  ]
+
+  secrets = [
+    { name = "RDS_HOSTNAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_HOSTNAME::" },
+    { name = "RDS_USERNAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_USERNAME::" },
+    { name = "RDS_PASSWORD", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_PASSWORD::" },
+    { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
+    { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
+    { name = "SMTP_HOST", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_HOST::" },
+    { name = "SMTP_PORT", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_PORT::" },
+    { name = "SMTP_USER", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_USER::" },
+    { name = "SMTP_PASSWORD", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_PASSWORD::" },
+    { name = "SMTP_FROM", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_FROM::" },
   ]
 
   project_name = var.project_name

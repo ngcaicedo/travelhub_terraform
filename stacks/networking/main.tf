@@ -17,7 +17,8 @@ data "aws_subnets" "default" {
 module "security_groups" {
   source = "../../modules/security_groups"
 
-  vpc_id       = data.aws_vpc.default.id
-  project_name = var.project_name
-  environment  = var.environment
+  vpc_id                 = data.aws_vpc.default.id
+  project_name           = var.project_name
+  environment            = var.environment
+  db_public_access_cidrs = var.db_public_access_cidrs
 }

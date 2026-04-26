@@ -70,13 +70,13 @@ resource "aws_security_group" "rds" {
   }
 
   dynamic "ingress" {
-    for_each = var.environment == "development" ? [1] : []
+    for_each = length(var.db_public_access_cidrs) > 0 ? [1] : []
     content {
-      description = "PostgreSQL public access (dev only)"
+      description = "PostgreSQL acceso publico autorizado (IDE/dev)"
       from_port   = 5432
       to_port     = 5432
       protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+      cidr_blocks = var.db_public_access_cidrs
     }
   }
 
