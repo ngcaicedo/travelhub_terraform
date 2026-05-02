@@ -5,7 +5,7 @@ resource "aws_cloudfront_response_headers_policy" "cors" {
     access_control_allow_credentials = true
 
     access_control_allow_headers {
-      items = ["Authorization", "Content-Type", "X-Internal-Api-Key"]
+      items = ["Authorization", "Content-Type", "X-Internal-Api-Key", "X-Traveler-Id", "X-Correlation-Id"]
     }
 
     access_control_allow_methods {

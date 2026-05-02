@@ -1,5 +1,5 @@
 environment = "dev"
-state_bucket            = "travelhub-terraform-state-590340239150"
+state_bucket            = "travelhub-terraform-state-beta"
 github_repo_id          = "jd-sant/travelhub_miso"
 branch_name             = "develop"
 frontend_github_repo_id = "ngcaicedo/travelhub_frontend"

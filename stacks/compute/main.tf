@@ -449,6 +449,7 @@ module "reservations_service" {
     { name = "PROPERTIES_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
     { name = "PAYMENTS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
     { name = "NOTIFICATIONS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "TRAVELHUB_SERVICE_FEE_RATE", value = "0.08" },
   ]
 
   secrets = [
@@ -583,6 +584,7 @@ module "properties_service" {
     { name = "RDS_USERNAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_USERNAME::" },
     { name = "RDS_PASSWORD", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_PASSWORD::" },
     { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
+    { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
   ]
 
   project_name = var.project_name
@@ -651,6 +653,7 @@ module "search_service" {
   execution_role_arn = aws_iam_role.ecs_task_execution.arn
 
   environment_variables = [
+    { name = "ENV", value = "production" },
     { name = "DB_SCHEMA", value = "search_schema" },
     { name = "DB_ECHO", value = "False" },
     { name = "RDS_PORT", value = "5432" },
