@@ -2,15 +2,6 @@ environment   = "development"
 state_bucket  = "travelhub-terraform-state-<AWS_ACCOUNT_ID>"
 desired_count = 1
 
-# ARNs de las políticas de escalado automático para cada microservicio
-users_scaling_policy_arn         = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:...:resource/ecs/service/CLUSTER_NAME/users:policyName/cpu-target-tracking-users"
-security_scaling_policy_arn      = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:...:resource/ecs/service/CLUSTER_NAME/security:policyName/cpu-target-tracking-security"
-reservations_scaling_policy_arn  = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:...:resource/ecs/service/CLUSTER_NAME/reservations:policyName/cpu-target-tracking-reservations"
-payments_scaling_policy_arn      = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:...:resource/ecs/service/CLUSTER_NAME/payments:policyName/cpu-target-tracking-payments"
-notifications_scaling_policy_arn = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:...:resource/ecs/service/CLUSTER_NAME/notifications:policyName/cpu-target-tracking-notifications"
-properties_scaling_policy_arn    = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:...:resource/ecs/service/CLUSTER_NAME/properties:policyName/cpu-target-tracking-properties"
-search_scaling_policy_arn        = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:...:resource/ecs/service/CLUSTER_NAME/search:policyName/cpu-target-tracking-search"
-
 # Ejemplo de alarma CloudWatch para ECS CPU Utilization
 alarms = [
   {
@@ -24,10 +15,10 @@ alarms = [
     threshold           = 70
     description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS users."
     actions_enabled     = true
-    alarm_actions       = [users_scaling_policy_arn]
+    alarm_actions       = ["arn:aws:autoscaling:<REGION>:<AWS_ACCOUNT_ID>:scalingPolicy:...:resource/ecs/service/cluster_name/users:policyName/cpu-target-tracking-users"]
     ok_actions          = []
     dimensions = {
-      ClusterName = "${var.project_name}-${var.environment}"
+      ClusterName = "<ClusterName>"
       ServiceName = "travelhub-users"
     }
     treat_missing_data = "missing"
@@ -43,10 +34,10 @@ alarms = [
     threshold           = 70
     description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS security."
     actions_enabled     = true
-    alarm_actions       = [security_scaling_policy_arn]
+    alarm_actions       = ["arn:aws:autoscaling:<REGION>:<AWS_ACCOUNT_ID>:scalingPolicy:...:resource/ecs/service/cluster_name/security:policyName/cpu-target-tracking-security"]
     ok_actions          = []
     dimensions = {
-      ClusterName = "${var.project_name}-${var.environment}"
+      ClusterName = "<ClusterName>"
       ServiceName = "travelhub-security"
     }
     treat_missing_data = "missing"
@@ -62,10 +53,10 @@ alarms = [
     threshold           = 70
     description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS reservations."
     actions_enabled     = true
-    alarm_actions       = [reservations_scaling_policy_arn]
+    alarm_actions       = ["arn:aws:autoscaling:<REGION>:<AWS_ACCOUNT_ID>:scalingPolicy:...:resource/ecs/service/cluster_name/reservations:policyName/cpu-target-tracking-reservations"]
     ok_actions          = []
     dimensions = {
-      ClusterName = "${var.project_name}-${var.environment}"
+      ClusterName = "<ClusterName>"
       ServiceName = "travelhub-reservations"
     }
     treat_missing_data = "missing"
@@ -81,10 +72,10 @@ alarms = [
     threshold           = 70
     description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS payments."
     actions_enabled     = true
-    alarm_actions       = [payments_scaling_policy_arn]
+    alarm_actions       = ["arn:aws:autoscaling:<REGION>:<AWS_ACCOUNT_ID>:scalingPolicy:...:resource/ecs/service/cluster_name/payments:policyName/cpu-target-tracking-payments"]
     ok_actions          = []
     dimensions = {
-      ClusterName = "${var.project_name}-${var.environment}"
+      ClusterName = "<ClusterName>"
       ServiceName = "travelhub-payments"
     }
     treat_missing_data = "missing"
@@ -100,10 +91,10 @@ alarms = [
     threshold           = 70
     description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS notifications."
     actions_enabled     = true
-    alarm_actions       = [notifications_scaling_policy_arn]
+    alarm_actions       = ["arn:aws:autoscaling:<REGION>:<AWS_ACCOUNT_ID>:scalingPolicy:...:resource/ecs/service/cluster_name/notifications:policyName/cpu-target-tracking-notifications"]
     ok_actions          = []
     dimensions = {
-      ClusterName = "${var.project_name}-${var.environment}"
+      ClusterName = "<ClusterName>"
       ServiceName = "travelhub-notifications"
     }
     treat_missing_data = "missing"
@@ -119,10 +110,10 @@ alarms = [
     threshold           = 70
     description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS properties."
     actions_enabled     = true
-    alarm_actions       = [properties_scaling_policy_arn]
+    alarm_actions       = ["arn:aws:autoscaling:<REGION>:<AWS_ACCOUNT_ID>:scalingPolicy:...:resource/ecs/service/cluster_name/properties:policyName/cpu-target-tracking-properties"]
     ok_actions          = []
     dimensions = {
-      ClusterName = "${var.project_name}-${var.environment}"
+      ClusterName = "<ClusterName>"
       ServiceName = "travelhub-properties"
     }
     treat_missing_data = "missing"
@@ -138,10 +129,10 @@ alarms = [
     threshold           = 70
     description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS search."
     actions_enabled     = true
-    alarm_actions       = [search_scaling_policy_arn]
+    alarm_actions       = ["arn:aws:autoscaling:<REGION>:<AWS_ACCOUNT_ID>:scalingPolicy:...:resource/ecs/service/cluster_name/search:policyName/cpu-target-tracking-search"]
     ok_actions          = []
     dimensions = {
-      ClusterName = "${var.project_name}-${var.environment}"
+      ClusterName = "<ClusterName>"
       ServiceName = "travelhub-search"
     }
     treat_missing_data = "missing"
