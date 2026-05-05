@@ -27,3 +27,4 @@ override.tf.json
 terraform.rc
 
 # NO ignorar: .terraform.lock.hcl (convención: versionar en el repo para builds reproducibles)
+aws/

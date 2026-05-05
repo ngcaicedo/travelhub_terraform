@@ -1,3 +1,149 @@
 environment   = "development"
 state_bucket  = "travelhub-terraform-state-<AWS_ACCOUNT_ID>"
 desired_count = 1
+
+# ARNs de las políticas de escalado automático para cada microservicio
+users_scaling_policy_arn         = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:...:resource/ecs/service/CLUSTER_NAME/users:policyName/cpu-target-tracking-users"
+security_scaling_policy_arn      = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:...:resource/ecs/service/CLUSTER_NAME/security:policyName/cpu-target-tracking-security"
+reservations_scaling_policy_arn  = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:...:resource/ecs/service/CLUSTER_NAME/reservations:policyName/cpu-target-tracking-reservations"
+payments_scaling_policy_arn      = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:...:resource/ecs/service/CLUSTER_NAME/payments:policyName/cpu-target-tracking-payments"
+notifications_scaling_policy_arn = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:...:resource/ecs/service/CLUSTER_NAME/notifications:policyName/cpu-target-tracking-notifications"
+properties_scaling_policy_arn    = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:...:resource/ecs/service/CLUSTER_NAME/properties:policyName/cpu-target-tracking-properties"
+search_scaling_policy_arn        = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:...:resource/ecs/service/CLUSTER_NAME/search:policyName/cpu-target-tracking-search"
+
+# Ejemplo de alarma CloudWatch para ECS CPU Utilization
+alarms = [
+  {
+    name                = "ecs-cpu-utilization-high-users"
+    comparison_operator = "GreaterThanThreshold"
+    evaluation_periods  = 1
+    metric_name         = "CPUUtilization"
+    namespace           = "AWS/ECS"
+    period              = 60
+    statistic           = "Average"
+    threshold           = 70
+    description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS users."
+    actions_enabled     = true
+    alarm_actions       = [users_scaling_policy_arn]
+    ok_actions          = []
+    dimensions = {
+      ClusterName = "${var.project_name}-${var.environment}"
+      ServiceName = "travelhub-users"
+    }
+    treat_missing_data = "missing"
+  },
+  {
+    name                = "ecs-cpu-utilization-high-security"
+    comparison_operator = "GreaterThanThreshold"
+    evaluation_periods  = 1
+    metric_name         = "CPUUtilization"
+    namespace           = "AWS/ECS"
+    period              = 60
+    statistic           = "Average"
+    threshold           = 70
+    description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS security."
+    actions_enabled     = true
+    alarm_actions       = [security_scaling_policy_arn]
+    ok_actions          = []
+    dimensions = {
+      ClusterName = "${var.project_name}-${var.environment}"
+      ServiceName = "travelhub-security"
+    }
+    treat_missing_data = "missing"
+  },
+  {
+    name                = "ecs-cpu-utilization-high-reservations"
+    comparison_operator = "GreaterThanThreshold"
+    evaluation_periods  = 1
+    metric_name         = "CPUUtilization"
+    namespace           = "AWS/ECS"
+    period              = 60
+    statistic           = "Average"
+    threshold           = 70
+    description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS reservations."
+    actions_enabled     = true
+    alarm_actions       = [reservations_scaling_policy_arn]
+    ok_actions          = []
+    dimensions = {
+      ClusterName = "${var.project_name}-${var.environment}"
+      ServiceName = "travelhub-reservations"
+    }
+    treat_missing_data = "missing"
+  },
+  {
+    name                = "ecs-cpu-utilization-high-payments"
+    comparison_operator = "GreaterThanThreshold"
+    evaluation_periods  = 1
+    metric_name         = "CPUUtilization"
+    namespace           = "AWS/ECS"
+    period              = 60
+    statistic           = "Average"
+    threshold           = 70
+    description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS payments."
+    actions_enabled     = true
+    alarm_actions       = [payments_scaling_policy_arn]
+    ok_actions          = []
+    dimensions = {
+      ClusterName = "${var.project_name}-${var.environment}"
+      ServiceName = "travelhub-payments"
+    }
+    treat_missing_data = "missing"
+  },
+  {
+    name                = "ecs-cpu-utilization-high-notifications"
+    comparison_operator = "GreaterThanThreshold"
+    evaluation_periods  = 1
+    metric_name         = "CPUUtilization"
+    namespace           = "AWS/ECS"
+    period              = 60
+    statistic           = "Average"
+    threshold           = 70
+    description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS notifications."
+    actions_enabled     = true
+    alarm_actions       = [notifications_scaling_policy_arn]
+    ok_actions          = []
+    dimensions = {
+      ClusterName = "${var.project_name}-${var.environment}"
+      ServiceName = "travelhub-notifications"
+    }
+    treat_missing_data = "missing"
+  },
+  {
+    name                = "ecs-cpu-utilization-high-properties"
+    comparison_operator = "GreaterThanThreshold"
+    evaluation_periods  = 1
+    metric_name         = "CPUUtilization"
+    namespace           = "AWS/ECS"
+    period              = 60
+    statistic           = "Average"
+    threshold           = 70
+    description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS properties."
+    actions_enabled     = true
+    alarm_actions       = [properties_scaling_policy_arn]
+    ok_actions          = []
+    dimensions = {
+      ClusterName = "${var.project_name}-${var.environment}"
+      ServiceName = "travelhub-properties"
+    }
+    treat_missing_data = "missing"
+  },
+  {
+    name                = "ecs-cpu-utilization-high-search"
+    comparison_operator = "GreaterThanThreshold"
+    evaluation_periods  = 1
+    metric_name         = "CPUUtilization"
+    namespace           = "AWS/ECS"
+    period              = 60
+    statistic           = "Average"
+    threshold           = 70
+    description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS search."
+    actions_enabled     = true
+    alarm_actions       = [search_scaling_policy_arn]
+    ok_actions          = []
+    dimensions = {
+      ClusterName = "${var.project_name}-${var.environment}"
+      ServiceName = "travelhub-search"
+    }
+    treat_missing_data = "missing"
+  }
+]

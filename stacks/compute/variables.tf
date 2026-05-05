@@ -1,3 +1,8 @@
+variable "alarms" {
+  description = "Lista de alarmas CloudWatch a crear. Ver ejemplo en terraform.tfvars.example."
+  type = any
+  default = []
+}
 variable "region" {
   type    = string
   default = "us-east-1"

@@ -8,6 +8,11 @@ variable "cluster_id" {
   type        = string
 }
 
+variable "cluster_name" {
+  description = "ECS cluster name used by Application Auto Scaling"
+  type        = string
+}
+
 variable "task_cpu" {
   description = "Task CPU units"
   type        = string
@@ -95,4 +100,34 @@ variable "region" {
   description = "AWS region for CloudWatch logs"
   type        = string
   default     = "us-east-1"
+}
+
+variable "min_capacity" {
+  description = "Minimum number of ECS tasks for autoscaling."
+  type        = number
+  default     = 1
+}
+
+variable "max_capacity" {
+  description = "Maximum number of ECS tasks for autoscaling."
+  type        = number
+  default     = 10
+}
+
+variable "cpu_target_value" {
+  description = "Target CPU utilization percentage for autoscaling."
+  type        = number
+  default     = 70
+}
+
+variable "scale_in_cooldown" {
+  description = "Cooldown period (seconds) after scale-in."
+  type        = number
+  default     = 300
+}
+
+variable "scale_out_cooldown" {
+  description = "Cooldown period (seconds) after scale-out."
+  type        = number
+  default     = 60
 }

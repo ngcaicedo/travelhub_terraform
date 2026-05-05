@@ -147,6 +147,15 @@ module "alb" {
 }
 
 # ---------------------------------------------------------------------------
+# CloudWatch Alarms (ECS CPU Utilization)
+# ---------------------------------------------------------------------------
+
+module "cloudwatch_alarms" {
+  source = "../../modules/cloudwatch_alarms"
+  alarms = var.alarms
+}
+
+# ---------------------------------------------------------------------------
 # EventBridge Scheduler — Lambda + IAM roles
 # ---------------------------------------------------------------------------
 
@@ -375,6 +384,12 @@ module "users_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
+  min_capacity        = 2
+  max_capacity        = 10
+  cpu_target_value    = 70
+  scale_in_cooldown   = 300
+  scale_out_cooldown  = 60
 }
 
 module "security_service" {
@@ -416,6 +431,7 @@ module "security_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
 }
 
 module "reservations_service" {
@@ -463,6 +479,7 @@ module "reservations_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
 }
 
 module "payments_service" {
@@ -511,6 +528,7 @@ module "payments_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
 }
 
 module "notifications_service" {
@@ -556,6 +574,7 @@ module "notifications_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
 }
 
 module "properties_service" {
@@ -588,6 +607,7 @@ module "properties_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
 }
 
 # Worker que consume la cola SQS y despacha correos vía SES.
@@ -635,6 +655,7 @@ module "notifications_worker_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
 }
 
 module "search_service" {
@@ -670,4 +691,5 @@ module "search_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
 }
