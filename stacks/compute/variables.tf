@@ -1,7 +1,23 @@
 variable "alarms" {
-  description = "Lista de alarmas CloudWatch a crear. Ver ejemplo en terraform.tfvars.example."
-  type = any
-  default = []
+  description = "Lista opcional de alarmas CloudWatch para override. Si es null, se usan defaults del stack."
+  type = list(object({
+    name                = string
+    comparison_operator = string
+    evaluation_periods  = number
+    metric_name         = string
+    namespace           = string
+    period              = number
+    statistic           = string
+    threshold           = number
+    description         = string
+    actions_enabled     = bool
+    alarm_actions       = list(string)
+    ok_actions          = list(string)
+    dimensions          = map(string)
+    treat_missing_data  = string
+  }))
+  default  = null
+  nullable = true
 }
 variable "region" {
   type    = string
