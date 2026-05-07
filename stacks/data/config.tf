@@ -18,7 +18,22 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5"
     }
+    postgresql = {
+      source  = "cyrilgdn/postgresql"
+      version = "~> 1.21"
+    }
   }
 
   backend "s3" {}
+}
+
+provider "postgresql" {
+  host            = module.rds.address
+  port            = module.rds.port
+  database        = var.db_name
+  username        = var.db_username
+  password        = var.db_password
+  sslmode         = "require"
+  superuser       = false
+  connect_timeout = 15
 }

@@ -230,3 +230,42 @@ Para no tener que verificar cada destinatario, hay que solicitar acceso a produc
 4. AWS responde típicamente en < 24h.
 
 Una vez aprobado, SES acepta cualquier destinatario sin verificación previa.
+
+---
+
+## RDS — Extensión `unaccent` (filtro de búsqueda accent-insensitive)
+
+El microservicio `properties` filtra por ciudad usando `unaccent(LOWER(location))` para que `?city=Bogota` haga match con `Bogotá, Colombia`. La extensión `unaccent` viene incluida con Postgres pero hay que habilitarla por DB.
+
+Se gestiona desde Terraform en el stack **data** mediante el provider [`cyrilgdn/postgresql`](https://registry.terraform.io/providers/cyrilgdn/postgresql/latest):
+
+```hcl
+# stacks/data/main.tf
+resource "postgresql_extension" "unaccent" {
+  name = "unaccent"
+}
+```
+
+El `terraform apply` del stack data instala (o no toca, si ya existe) la extensión idempotentemente.
+
+### Requisito: conectividad al RDS al momento del apply
+
+El provider abre una conexión TCP al endpoint del RDS:
+
+- **Development**: el RDS está marcado `publicly_accessible = true` y el SG abre el puerto 5432 a `db_public_access_cidrs`. `terraform apply` desde la máquina del operador funciona directamente.
+- **Production**: el RDS está privado (`publicly_accessible = false`). Hay que correr el apply desde dentro de la VPC. Opciones:
+  - CodeBuild con `vpc_config` apuntando a las subnets privadas y SG con egreso al RDS (recomendado para CI).
+  - Cloud9/EC2 bastion temporal en la VPC.
+  - VPN/Direct Connect si existe.
+
+### Verificar manualmente
+
+```bash
+psql "host=<rds-endpoint> user=<RDS_USERNAME> dbname=<RDS_DB_NAME>" \
+  -c "SELECT unaccent('Bogotá');"
+# unaccent
+# ----------
+# Bogota
+```
+
+Si la extensión no está, `GET /api/v1/properties/search?city=...` devuelve 500 (la query usa `func.unaccent` que no existiría).
