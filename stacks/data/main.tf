@@ -17,6 +17,15 @@ module "rds" {
   environment  = var.environment
 }
 
+# Postgres extensions on the shared RDS.
+# `unaccent` is required by services/properties for accent-insensitive city
+# filtering (e.g. ?city=Bogota matches "Bogotá, Colombia").
+resource "postgresql_extension" "unaccent" {
+  name = "unaccent"
+
+  depends_on = [module.rds]
+}
+
 module "rds_credentials" {
   source = "../../modules/secrets_manager"
 

@@ -715,22 +715,21 @@ module "search_service" {
   target_group_arn   = module.alb.target_group_arns["search"]
   execution_role_arn = aws_iam_role.ecs_task_execution.arn
 
+  # search is now stateless: it orchestrates HTTP calls to properties + reservations
+  # over the shared ALB, with Redis as an optional cache. No RDS dependency.
   environment_variables = [
     { name = "ENV", value = "production" },
-    { name = "DB_SCHEMA", value = "search_schema" },
-    { name = "DB_ECHO", value = "False" },
-    { name = "RDS_PORT", value = "5432" },
     { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
+    { name = "PROPERTIES_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "RESERVATIONS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "SERVICE_REQUEST_TIMEOUT", value = "5.0" },
     { name = "REDIS_HOST", value = local.data_state.redis_host },
     { name = "REDIS_PORT", value = tostring(local.data_state.redis_port) },
     { name = "REDIS_DB", value = "0" },
   ]
 
   secrets = [
-    { name = "RDS_HOSTNAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_HOSTNAME::" },
-    { name = "RDS_USERNAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_USERNAME::" },
-    { name = "RDS_PASSWORD", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_PASSWORD::" },
-    { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
+    { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
   ]
 
   project_name = var.project_name
