@@ -51,6 +51,48 @@ locals {
   networking = data.terraform_remote_state.networking.outputs
   registry   = data.terraform_remote_state.registry.outputs
   data_state = data.terraform_remote_state.data.outputs
+
+  alarmed_services = [
+    "users",
+    "security",
+    "reservations",
+    "payments",
+    "notifications",
+    "properties",
+    "search",
+  ]
+
+  service_scaling_policy_arns = {
+    users         = module.users_service.scaling_policy_arn
+    security      = module.security_service.scaling_policy_arn
+    reservations  = module.reservations_service.scaling_policy_arn
+    payments      = module.payments_service.scaling_policy_arn
+    notifications = module.notifications_service.scaling_policy_arn
+    properties    = module.properties_service.scaling_policy_arn
+    search        = module.search_service.scaling_policy_arn
+  }
+
+  default_alarms = [for service in local.alarmed_services : {
+    name                = "ecs-cpu-utilization-high-${service}"
+    comparison_operator = "GreaterThanThreshold"
+    evaluation_periods  = 1
+    metric_name         = "CPUUtilization"
+    namespace           = "AWS/ECS"
+    period              = 60
+    statistic           = "Average"
+    threshold           = 70
+    description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS ${service}."
+    actions_enabled     = true
+    alarm_actions       = [local.service_scaling_policy_arns[service]]
+    ok_actions          = []
+    dimensions = {
+      ClusterName = module.ecs_cluster.cluster_name
+      ServiceName = "${var.project_name}-${var.environment}-${service}"
+    }
+    treat_missing_data = "missing"
+  }]
+
+  alarms_effective = var.alarms != null ? var.alarms : local.default_alarms
 }
 
 # ---------------------------------------------------------------------------
@@ -144,6 +186,15 @@ module "alb" {
       path_patterns     = ["/api/v1/search*"]
     }
   }
+}
+
+# ---------------------------------------------------------------------------
+# CloudWatch Alarms (ECS CPU Utilization)
+# ---------------------------------------------------------------------------
+
+module "cloudwatch_alarms" {
+  source = "../../modules/cloudwatch_alarms"
+  alarms = local.alarms_effective
 }
 
 # ---------------------------------------------------------------------------
@@ -375,6 +426,12 @@ module "users_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
+  min_capacity        = 2
+  max_capacity        = 10
+  cpu_target_value    = 70
+  scale_in_cooldown   = 300
+  scale_out_cooldown  = 60
 }
 
 module "security_service" {
@@ -416,6 +473,7 @@ module "security_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
 }
 
 module "reservations_service" {
@@ -464,6 +522,7 @@ module "reservations_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
 }
 
 module "payments_service" {
@@ -512,6 +571,7 @@ module "payments_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
 }
 
 module "notifications_service" {
@@ -557,6 +617,7 @@ module "notifications_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
 }
 
 module "properties_service" {
@@ -590,6 +651,7 @@ module "properties_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
 }
 
 # Worker que consume la cola SQS y despacha correos vía SES.
@@ -637,6 +699,7 @@ module "notifications_worker_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
 }
 
 module "search_service" {
@@ -673,4 +736,5 @@ module "search_service" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+  cluster_name = module.ecs_cluster.cluster_name
 }

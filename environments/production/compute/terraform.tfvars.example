@@ -1,0 +1,28 @@
+environment   = "production"
+state_bucket  = "travelhub-terraform-state-<AWS_ACCOUNT_ID>"
+desired_count = 2
+# ARN de la política de escalado automático para usar en alarm_actions
+# Puedes obtenerlo con: output "scaling_policy_arn" del módulo users_service
+users_scaling_policy_arn = "arn:aws:autoscaling:REGION:ACCOUNT_ID:scalingPolicy:..."
+
+# alarms = [
+#   {
+#     name                = "ecs-cpu-utilization-high"
+#     comparison_operator = "GreaterThanThreshold"
+#     evaluation_periods  = 1
+#     metric_name         = "CPUUtilization"
+#     namespace           = "AWS/ECS"
+#     period              = 60
+#     statistic           = "Average"
+#     threshold           = 70
+#     description         = "Alarma si el uso de CPU supera el 70% en el servicio ECS."
+#     actions_enabled     = true
+#     alarm_actions       = [users_scaling_policy_arn] # Escalado automático
+#     ok_actions          = []
+#     dimensions = {
+#       ClusterName = "${var.project_name}-${var.environment}"
+#       ServiceName = "users"
+#     }
+#     treat_missing_data = "missing"
+#   }
+# ]
