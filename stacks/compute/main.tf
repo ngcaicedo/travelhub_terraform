@@ -638,6 +638,7 @@ module "properties_service" {
     { name = "DB_ECHO", value = "False" },
     { name = "RDS_PORT", value = "5432" },
     { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
+    { name = "SEED_MAP_CLUSTERS", value = "true" },
   ]
 
   secrets = [
