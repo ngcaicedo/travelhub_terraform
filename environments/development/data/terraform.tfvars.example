@@ -10,3 +10,7 @@ smtp_password       = "CHANGE_ME"
 smtp_from           = "CHANGE_ME"
 skip_final_snapshot = true
 publicly_accessible = true
+fcm_project_id           = ""
+fcm_service_account_json = ""
+# fcm_project_id           = "travelhub-dev-a1b2c"
+# fcm_service_account_json = file("./fcm-service-account.json")
