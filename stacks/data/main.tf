@@ -65,11 +65,13 @@ module "notifications_config" {
 
   secret_name = "${var.project_name}/${var.environment}/notifications/config"
   secret_values = {
-    SMTP_HOST     = var.smtp_host
-    SMTP_PORT     = var.smtp_port
-    SMTP_USER     = var.smtp_user
-    SMTP_PASSWORD = var.smtp_password
-    SMTP_FROM     = var.smtp_from
+    SMTP_HOST                = var.smtp_host
+    SMTP_PORT                = var.smtp_port
+    SMTP_USER                = var.smtp_user
+    SMTP_PASSWORD            = var.smtp_password
+    SMTP_FROM                = var.smtp_from
+    FCM_PROJECT_ID           = var.fcm_project_id
+    FCM_SERVICE_ACCOUNT_JSON = var.fcm_service_account_json
   }
 
   project_name = var.project_name

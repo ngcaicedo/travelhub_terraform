@@ -18,3 +18,9 @@ variable "region" {
   type        = string
   default     = "us-east-1"
 }
+
+variable "internal_api_key_secret_arn" {
+  description = "ARN del secret de Secrets Manager con la clave INTERNAL_API_KEY que la Lambda inyecta al llamar endpoints internos. Vacío = sin auth (modo legacy)."
+  type        = string
+  default     = ""
+}
