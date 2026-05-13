@@ -16,6 +16,11 @@ crash.*.log
 *.tfvars
 *.tfvars.json
 
+# Service account JSONs (Firebase, GCP, etc.) — NO commitear
+fcm-service-account.json
+*-service-account.json
+*-firebase-adminsdk-*.json
+
 # Overrides locales
 override.tf
 override.tf.json

@@ -168,6 +168,7 @@ module "alb" {
       priority          = 70
       path_patterns = [
         "/api/v1/notifications*",
+        "/api/v1/me*",
         "/api/v1/internal/payment-confirmations",
         "/api/v1/internal/reservation-updates",
         "/api/v1/internal/reservation-events",
@@ -209,6 +210,8 @@ module "reservation_checker_lambda" {
   project_name = var.project_name
   environment  = var.environment
   region       = var.region
+
+  internal_api_key_secret_arn = local.data_state.security_config_secret_arn
 }
 
 resource "aws_scheduler_schedule_group" "reservations" {
@@ -498,6 +501,7 @@ module "reservations_service" {
     { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
     { name = "RESERVATION_SCHEDULER_ENABLED", value = "true" },
     { name = "RESERVATION_SCHEDULER_DELAY_MINUTES", value = "15" },
+    { name = "ARRIVAL_REMINDER_LEAD_MINUTES", value = "2" },
     { name = "AWS_REGION", value = var.region },
     { name = "LAMBDA_ARN", value = module.reservation_checker_lambda.function_arn },
     { name = "SCHEDULER_ROLE_ARN", value = aws_iam_role.scheduler_invocation.arn },
@@ -599,6 +603,7 @@ module "notifications_service" {
     { name = "NOTIFICATIONS_QUEUE_URL", value = local.data_state.notifications_queue_url },
     { name = "SES_FROM_ADDRESS", value = local.data_state.ses_sender_email },
     { name = "SES_REGION", value = var.region },
+    { name = "JWT_ALGORITHM", value = "HS256" },
   ]
 
   secrets = [
@@ -607,11 +612,14 @@ module "notifications_service" {
     { name = "RDS_PASSWORD", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_PASSWORD::" },
     { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
+    { name = "JWT_SECRET_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:JWT_SECRET_KEY::" },
     { name = "SMTP_HOST", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_HOST::" },
     { name = "SMTP_PORT", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_PORT::" },
     { name = "SMTP_USER", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_USER::" },
     { name = "SMTP_PASSWORD", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_PASSWORD::" },
     { name = "SMTP_FROM", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_FROM::" },
+    { name = "FCM_PROJECT_ID", valueFrom = "${local.data_state.notifications_config_secret_arn}:FCM_PROJECT_ID::" },
+    { name = "FCM_SERVICE_ACCOUNT_JSON", valueFrom = "${local.data_state.notifications_config_secret_arn}:FCM_SERVICE_ACCOUNT_JSON::" },
   ]
 
   project_name = var.project_name
@@ -638,6 +646,7 @@ module "properties_service" {
     { name = "DB_ECHO", value = "False" },
     { name = "RDS_PORT", value = "5432" },
     { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
+    { name = "SEED_MAP_CLUSTERS", value = "true" },
   ]
 
   secrets = [

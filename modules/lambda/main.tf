@@ -2,11 +2,29 @@ locals {
   handler_code = <<-PYTHON
 import json
 import logging
+import os
 import urllib.error
 import urllib.request
 
+import boto3
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+_secret_cache = {"value": None}
+
+
+def _get_internal_api_key():
+    if _secret_cache["value"] is not None:
+        return _secret_cache["value"]
+    secret_arn = os.environ.get("INTERNAL_API_KEY_SECRET_ARN")
+    if not secret_arn:
+        return ""
+    client = boto3.client("secretsmanager")
+    raw = client.get_secret_value(SecretId=secret_arn)["SecretString"]
+    payload = json.loads(raw)
+    _secret_cache["value"] = payload.get("INTERNAL_API_KEY", "")
+    return _secret_cache["value"]
 
 
 def lambda_handler(event, context):
@@ -17,30 +35,34 @@ def lambda_handler(event, context):
         logger.error("Evento invalido: faltan reservation_id o api_url")
         raise ValueError("Evento invalido: faltan reservation_id o api_url")
 
-    logger.info("Verificando reserva %s -> %s", reservation_id, api_url)
+    logger.info("Disparando job %s -> %s", reservation_id, api_url)
+
+    headers = {"Content-Type": "application/json"}
+    api_key = _get_internal_api_key()
+    if api_key:
+        headers["X-Internal-Api-Key"] = api_key
 
     req = urllib.request.Request(
         url=api_url,
-        method="GET",
-        headers={"Content-Type": "application/json"},
+        method="POST",
+        data=json.dumps({}).encode("utf-8"),
+        headers=headers,
     )
 
     try:
         with urllib.request.urlopen(req, timeout=10) as response:
-            body = json.loads(response.read().decode("utf-8"))
-            logger.info(
-                "Reserva %s -> status_before=%s status_after=%s action=%s",
-                reservation_id,
-                body.get("status_before"),
-                body.get("status_after"),
-                body.get("action_applied"),
-            )
+            raw = response.read().decode("utf-8")
+            try:
+                body = json.loads(raw) if raw else {}
+            except json.JSONDecodeError:
+                body = {"raw": raw}
+            logger.info("Job %s ok -> %s", reservation_id, body)
             return {"statusCode": 200, "body": body}
     except urllib.error.HTTPError as exc:
-        logger.error("HTTP %s al verificar reserva %s", exc.code, reservation_id)
+        logger.error("HTTP %s al disparar job %s: %s", exc.code, reservation_id, exc.read())
         raise
     except Exception as exc:
-        logger.error("Error inesperado en reserva %s: %s", reservation_id, str(exc))
+        logger.error("Error inesperado en job %s: %s", reservation_id, str(exc))
         raise
 PYTHON
 }
@@ -95,6 +117,22 @@ resource "aws_iam_role_policy" "lambda_logs" {
   })
 }
 
+resource "aws_iam_role_policy" "lambda_secrets" {
+  count = var.internal_api_key_secret_arn != "" ? 1 : 0
+
+  name = "${var.function_name}-secrets-policy"
+  role = aws_iam_role.lambda_execution.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["secretsmanager:GetSecretValue"]
+      Resource = var.internal_api_key_secret_arn
+    }]
+  })
+}
+
 resource "aws_lambda_function" "this" {
   function_name    = var.function_name
   role             = aws_iam_role.lambda_execution.arn
@@ -103,6 +141,12 @@ resource "aws_lambda_function" "this" {
   runtime          = "python3.12"
   handler          = "lambda_function.lambda_handler"
   timeout          = 30
+
+  environment {
+    variables = {
+      INTERNAL_API_KEY_SECRET_ARN = var.internal_api_key_secret_arn
+    }
+  }
 
   depends_on = [aws_cloudwatch_log_group.lambda]
 

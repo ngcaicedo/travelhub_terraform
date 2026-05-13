@@ -102,3 +102,16 @@ variable "ses_sender_email" {
   type        = string
   default     = ""
 }
+
+variable "fcm_project_id" {
+  description = "Project ID del proyecto Firebase usado por FCM HTTP v1 (push notifications mobile)."
+  type        = string
+  default     = ""
+}
+
+variable "fcm_service_account_json" {
+  description = "JSON completo de la service account de Firebase con permisos de FCM. Se inyecta como string al servicio notifications."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
