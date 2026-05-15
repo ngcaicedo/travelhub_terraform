@@ -131,3 +131,15 @@ variable "scale_out_cooldown" {
   type        = number
   default     = 60
 }
+
+variable "request_count_target" {
+  description = "Target requests per task for ALBRequestCountPerTarget scaling. Null disables this policy."
+  type        = number
+  default     = null
+}
+
+variable "request_count_target_group_label" {
+  description = "ALB+TG identifier ('app/<alb-suffix>/<tg-suffix>') required when request_count_target is set."
+  type        = string
+  default     = null
+}

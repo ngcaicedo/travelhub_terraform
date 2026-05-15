@@ -17,3 +17,11 @@ output "target_group_arns" {
 output "target_group_names" {
   value = { for name, tg in aws_lb_target_group.this : name => tg.name }
 }
+
+output "alb_arn_suffix" {
+  value = aws_lb.this.arn_suffix
+}
+
+output "target_group_arn_suffixes" {
+  value = { for name, tg in aws_lb_target_group.this : name => tg.arn_suffix }
+}

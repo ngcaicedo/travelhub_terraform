@@ -93,6 +93,11 @@ locals {
   }]
 
   alarms_effective = var.alarms != null ? var.alarms : local.default_alarms
+
+  request_count_target_labels = {
+    for name, suffix in module.alb.target_group_arn_suffixes :
+    name => "${module.alb.alb_arn_suffix}/${suffix}"
+  }
 }
 
 # ---------------------------------------------------------------------------
@@ -426,15 +431,17 @@ module "users_service" {
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
   ]
 
-  project_name = var.project_name
-  environment  = var.environment
-  region       = var.region
-  cluster_name = module.ecs_cluster.cluster_name
-  min_capacity        = 2
-  max_capacity        = 10
-  cpu_target_value    = 70
-  scale_in_cooldown   = 300
-  scale_out_cooldown  = 60
+  project_name                     = var.project_name
+  environment                      = var.environment
+  region                           = var.region
+  cluster_name                     = module.ecs_cluster.cluster_name
+  min_capacity                     = var.service_min_capacity
+  max_capacity                     = var.service_max_capacity
+  cpu_target_value                 = 70
+  scale_in_cooldown                = 300
+  scale_out_cooldown               = 60
+  request_count_target             = var.request_count_per_target
+  request_count_target_group_label = local.request_count_target_labels["users"]
 }
 
 module "security_service" {
@@ -473,10 +480,14 @@ module "security_service" {
     { name = "SMTP_FROM", valueFrom = "${local.data_state.security_config_secret_arn}:SMTP_FROM::" },
   ]
 
-  project_name = var.project_name
-  environment  = var.environment
-  region       = var.region
-  cluster_name = module.ecs_cluster.cluster_name
+  project_name                     = var.project_name
+  environment                      = var.environment
+  region                           = var.region
+  cluster_name                     = module.ecs_cluster.cluster_name
+  min_capacity                     = var.service_min_capacity
+  max_capacity                     = var.service_max_capacity
+  request_count_target             = var.request_count_per_target
+  request_count_target_group_label = local.request_count_target_labels["security"]
 }
 
 module "reservations_service" {
@@ -523,10 +534,14 @@ module "reservations_service" {
     { name = "JWT_SECRET_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:JWT_SECRET_KEY::" },
   ]
 
-  project_name = var.project_name
-  environment  = var.environment
-  region       = var.region
-  cluster_name = module.ecs_cluster.cluster_name
+  project_name                     = var.project_name
+  environment                      = var.environment
+  region                           = var.region
+  cluster_name                     = module.ecs_cluster.cluster_name
+  min_capacity                     = var.service_min_capacity
+  max_capacity                     = var.service_max_capacity
+  request_count_target             = var.request_count_per_target
+  request_count_target_group_label = local.request_count_target_labels["reservations"]
 }
 
 module "payments_service" {
@@ -572,10 +587,14 @@ module "payments_service" {
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
   ]
 
-  project_name = var.project_name
-  environment  = var.environment
-  region       = var.region
-  cluster_name = module.ecs_cluster.cluster_name
+  project_name                     = var.project_name
+  environment                      = var.environment
+  region                           = var.region
+  cluster_name                     = module.ecs_cluster.cluster_name
+  min_capacity                     = var.service_min_capacity
+  max_capacity                     = var.service_max_capacity
+  request_count_target             = var.request_count_per_target
+  request_count_target_group_label = local.request_count_target_labels["payments"]
 }
 
 module "notifications_service" {
@@ -622,10 +641,14 @@ module "notifications_service" {
     { name = "FCM_SERVICE_ACCOUNT_JSON", valueFrom = "${local.data_state.notifications_config_secret_arn}:FCM_SERVICE_ACCOUNT_JSON::" },
   ]
 
-  project_name = var.project_name
-  environment  = var.environment
-  region       = var.region
-  cluster_name = module.ecs_cluster.cluster_name
+  project_name                     = var.project_name
+  environment                      = var.environment
+  region                           = var.region
+  cluster_name                     = module.ecs_cluster.cluster_name
+  min_capacity                     = var.service_min_capacity
+  max_capacity                     = var.service_max_capacity
+  request_count_target             = var.request_count_per_target
+  request_count_target_group_label = local.request_count_target_labels["notifications"]
 }
 
 module "properties_service" {
@@ -657,10 +680,14 @@ module "properties_service" {
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
   ]
 
-  project_name = var.project_name
-  environment  = var.environment
-  region       = var.region
-  cluster_name = module.ecs_cluster.cluster_name
+  project_name                     = var.project_name
+  environment                      = var.environment
+  region                           = var.region
+  cluster_name                     = module.ecs_cluster.cluster_name
+  min_capacity                     = var.service_min_capacity
+  max_capacity                     = var.service_max_capacity
+  request_count_target             = var.request_count_per_target
+  request_count_target_group_label = local.request_count_target_labels["properties"]
 }
 
 # Worker que consume la cola SQS y despacha correos vía SES.
@@ -741,8 +768,12 @@ module "search_service" {
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
   ]
 
-  project_name = var.project_name
-  environment  = var.environment
-  region       = var.region
-  cluster_name = module.ecs_cluster.cluster_name
+  project_name                     = var.project_name
+  environment                      = var.environment
+  region                           = var.region
+  cluster_name                     = module.ecs_cluster.cluster_name
+  min_capacity                     = var.service_min_capacity
+  max_capacity                     = var.service_max_capacity
+  request_count_target             = var.request_count_per_target
+  request_count_target_group_label = local.request_count_target_labels["search"]
 }
