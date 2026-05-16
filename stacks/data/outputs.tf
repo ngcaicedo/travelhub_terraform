@@ -14,6 +14,10 @@ output "security_config_secret_arn" {
   value = module.security_config.secret_arn
 }
 
+output "properties_config_secret_arn" {
+  value = module.properties_config.secret_arn
+}
+
 output "notifications_config_secret_arn" {
   value = module.notifications_config.secret_arn
 }

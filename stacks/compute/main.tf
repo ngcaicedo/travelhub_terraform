@@ -38,6 +38,7 @@ resource "aws_iam_role_policy" "ecs_secrets_access" {
         data.terraform_remote_state.data.outputs.security_config_secret_arn,
         data.terraform_remote_state.data.outputs.notifications_config_secret_arn,
         data.terraform_remote_state.data.outputs.payments_config_secret_arn,
+        data.terraform_remote_state.data.outputs.properties_config_secret_arn,
       ]
     }]
   })
@@ -426,15 +427,15 @@ module "users_service" {
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
   ]
 
-  project_name = var.project_name
-  environment  = var.environment
-  region       = var.region
-  cluster_name = module.ecs_cluster.cluster_name
-  min_capacity        = 2
-  max_capacity        = 10
-  cpu_target_value    = 70
-  scale_in_cooldown   = 300
-  scale_out_cooldown  = 60
+  project_name       = var.project_name
+  environment        = var.environment
+  region             = var.region
+  cluster_name       = module.ecs_cluster.cluster_name
+  min_capacity       = 2
+  max_capacity       = 10
+  cpu_target_value   = 70
+  scale_in_cooldown  = 300
+  scale_out_cooldown = 60
 }
 
 module "security_service" {
@@ -647,6 +648,9 @@ module "properties_service" {
     { name = "RDS_PORT", value = "5432" },
     { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
     { name = "SEED_MAP_CLUSTERS", value = "true" },
+    # Service-to-service URLs (resolved via the public ALB).
+    { name = "SECURITY_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "SEARCH_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
   ]
 
   secrets = [
@@ -655,6 +659,7 @@ module "properties_service" {
     { name = "RDS_PASSWORD", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_PASSWORD::" },
     { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
+    { name = "PRICING_INTEGRITY_SECRET", valueFrom = "${local.data_state.properties_config_secret_arn}:PRICING_INTEGRITY_SECRET::" },
   ]
 
   project_name = var.project_name
