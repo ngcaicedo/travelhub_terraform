@@ -708,6 +708,11 @@ module "notifications_worker_service" {
     { name = "SMTP_USER", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_USER::" },
     { name = "SMTP_PASSWORD", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_PASSWORD::" },
     { name = "SMTP_FROM", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_FROM::" },
+    # The worker is what actually publishes push notifications via FCM (the
+    # API service only registers device tokens). Without these secrets the
+    # arrival reminder + booking events never reach the device.
+    { name = "FCM_PROJECT_ID", valueFrom = "${local.data_state.notifications_config_secret_arn}:FCM_PROJECT_ID::" },
+    { name = "FCM_SERVICE_ACCOUNT_JSON", valueFrom = "${local.data_state.notifications_config_secret_arn}:FCM_SERVICE_ACCOUNT_JSON::" },
   ]
 
   project_name = var.project_name
