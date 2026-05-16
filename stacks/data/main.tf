@@ -91,6 +91,18 @@ module "payments_config" {
   environment  = var.environment
 }
 
+module "newrelic_config" {
+  source = "../../modules/secrets_manager"
+
+  secret_name = "${var.project_name}/${var.environment}/newrelic/config"
+  secret_values = {
+    NEW_RELIC_LICENSE_KEY = var.new_relic_license_key
+  }
+
+  project_name = var.project_name
+  environment  = var.environment
+}
+
 module "elasticache" {
   source = "../../modules/elasticache"
 

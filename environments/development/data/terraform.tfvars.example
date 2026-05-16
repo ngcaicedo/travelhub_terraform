@@ -14,3 +14,5 @@ fcm_project_id           = ""
 fcm_service_account_json = ""
 # fcm_project_id           = "travelhub-dev-a1b2c"
 # fcm_service_account_json = file("./fcm-service-account.json")
+
+new_relic_license_key = ""
