@@ -38,6 +38,7 @@ resource "aws_iam_role_policy" "ecs_secrets_access" {
         data.terraform_remote_state.data.outputs.security_config_secret_arn,
         data.terraform_remote_state.data.outputs.notifications_config_secret_arn,
         data.terraform_remote_state.data.outputs.payments_config_secret_arn,
+        data.terraform_remote_state.data.outputs.properties_config_secret_arn,
         data.terraform_remote_state.data.outputs.newrelic_config_secret_arn,
       ]
     }]
@@ -658,6 +659,9 @@ module "properties_service" {
     { name = "RDS_PORT", value = "5432" },
     { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
     { name = "SEED_MAP_CLUSTERS", value = "true" },
+    # Service-to-service URLs (resolved via the public ALB).
+    { name = "SECURITY_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "SEARCH_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
     { name = "NEW_RELIC_APP_NAME", value = "properties" },
   ]
 
@@ -667,6 +671,7 @@ module "properties_service" {
     { name = "RDS_PASSWORD", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_PASSWORD::" },
     { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
+    { name = "PRICING_INTEGRITY_SECRET", valueFrom = "${local.data_state.properties_config_secret_arn}:PRICING_INTEGRITY_SECRET::" },
     { name = "NEW_RELIC_LICENSE_KEY", valueFrom = "${local.data_state.newrelic_config_secret_arn}:NEW_RELIC_LICENSE_KEY::" },
   ]
 
@@ -717,6 +722,11 @@ module "notifications_worker_service" {
     { name = "SMTP_USER", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_USER::" },
     { name = "SMTP_PASSWORD", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_PASSWORD::" },
     { name = "SMTP_FROM", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_FROM::" },
+    # The worker is what actually publishes push notifications via FCM (the
+    # API service only registers device tokens). Without these secrets the
+    # arrival reminder + booking events never reach the device.
+    { name = "FCM_PROJECT_ID", valueFrom = "${local.data_state.notifications_config_secret_arn}:FCM_PROJECT_ID::" },
+    { name = "FCM_SERVICE_ACCOUNT_JSON", valueFrom = "${local.data_state.notifications_config_secret_arn}:FCM_SERVICE_ACCOUNT_JSON::" },
     { name = "NEW_RELIC_LICENSE_KEY", valueFrom = "${local.data_state.newrelic_config_secret_arn}:NEW_RELIC_LICENSE_KEY::" },
   ]
 

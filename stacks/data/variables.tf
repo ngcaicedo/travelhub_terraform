@@ -61,6 +61,12 @@ variable "internal_api_key" {
   sensitive = true
 }
 
+variable "pricing_integrity_secret" {
+  description = "HMAC-SHA256 secret used by properties to sign seasonal pricing rows."
+  type        = string
+  sensitive   = true
+}
+
 variable "smtp_host" {
   type    = string
   default = "smtp.gmail.com"

@@ -60,6 +60,18 @@ module "security_config" {
   environment  = var.environment
 }
 
+module "properties_config" {
+  source = "../../modules/secrets_manager"
+
+  secret_name = "${var.project_name}/${var.environment}/properties/config"
+  secret_values = {
+    PRICING_INTEGRITY_SECRET = var.pricing_integrity_secret
+  }
+
+  project_name = var.project_name
+  environment  = var.environment
+}
+
 module "notifications_config" {
   source = "../../modules/secrets_manager"
 
