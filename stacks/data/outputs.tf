@@ -14,6 +14,14 @@ output "security_config_secret_arn" {
   value = module.security_config.secret_arn
 }
 
+output "users_config_secret_arn" {
+  value = module.users_config.secret_arn
+}
+
+output "reservations_config_secret_arn" {
+  value = module.reservations_config.secret_arn
+}
+
 output "properties_config_secret_arn" {
   value = module.properties_config.secret_arn
 }

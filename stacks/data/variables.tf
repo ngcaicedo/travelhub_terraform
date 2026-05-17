@@ -128,3 +128,27 @@ variable "new_relic_license_key" {
   sensitive   = true
   default     = ""
 }
+
+variable "checkin_qr_secret_key" {
+  description = "AES-GCM key used by reservations to encrypt check-in QR payloads."
+  type        = string
+  sensitive   = true
+}
+
+variable "pii_data_encryption_key" {
+  description = "Encryption key for PII handled by the security service privacy controls."
+  type        = string
+  sensitive   = true
+}
+
+variable "users_pii_encryption_key" {
+  description = "Encryption key used by users service to cipher PII at rest."
+  type        = string
+  sensitive   = true
+}
+
+variable "users_email_lookup_hash_secret" {
+  description = "HMAC secret used by users service to build deterministic email lookup hashes."
+  type        = string
+  sensitive   = true
+}
