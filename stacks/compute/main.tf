@@ -36,6 +36,8 @@ resource "aws_iam_role_policy" "ecs_secrets_access" {
       Resource = [
         data.terraform_remote_state.data.outputs.rds_credentials_secret_arn,
         data.terraform_remote_state.data.outputs.security_config_secret_arn,
+        data.terraform_remote_state.data.outputs.users_config_secret_arn,
+        data.terraform_remote_state.data.outputs.reservations_config_secret_arn,
         data.terraform_remote_state.data.outputs.notifications_config_secret_arn,
         data.terraform_remote_state.data.outputs.payments_config_secret_arn,
         data.terraform_remote_state.data.outputs.properties_config_secret_arn,
@@ -419,6 +421,13 @@ module "users_service" {
     { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
     { name = "DEMO_SEED_ENABLED", value = "true" },
     { name = "NEW_RELIC_APP_NAME", value = "users" },
+    { name = "SECURITY_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "PRIVACY_COMPLIANCE_MODE", value = "True" },
+    { name = "USERS_PII_ENCRYPTION_ENABLED", value = "True" },
+    { name = "PRIVACY_AUDIT_ENABLED", value = "True" },
+    { name = "ENFORCE_TLS_HEADER", value = "True" },
+    { name = "DEFAULT_DATA_REGION", value = "aws-us-east-1" },
+    { name = "DATA_RESIDENCY_POLICIES", value = jsonencode({ CO = "aws-us-east-1", US = "aws-us-east-1", BR = "aws-sa-east-1", ES = "aws-eu-west-1", PT = "aws-eu-west-1" }) },
   ]
 
   secrets = [
@@ -427,6 +436,8 @@ module "users_service" {
     { name = "RDS_PASSWORD", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_PASSWORD::" },
     { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
+    { name = "USERS_PII_ENCRYPTION_KEY", valueFrom = "${local.data_state.users_config_secret_arn}:USERS_PII_ENCRYPTION_KEY::" },
+    { name = "USERS_EMAIL_LOOKUP_HASH_SECRET", valueFrom = "${local.data_state.users_config_secret_arn}:USERS_EMAIL_LOOKUP_HASH_SECRET::" },
     { name = "NEW_RELIC_LICENSE_KEY", valueFrom = "${local.data_state.newrelic_config_secret_arn}:NEW_RELIC_LICENSE_KEY::" },
   ]
 
@@ -462,6 +473,9 @@ module "security_service" {
     { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
     { name = "DEMO_SEED_ENABLED", value = "true" },
     { name = "NEW_RELIC_APP_NAME", value = "security" },
+    { name = "PRIVACY_COMPLIANCE_MODE", value = "True" },
+    { name = "DEFAULT_DATA_REGION", value = "aws-us-east-1" },
+    { name = "DATA_RESIDENCY_POLICIES", value = jsonencode({ CO = "aws-us-east-1", US = "aws-us-east-1", BR = "aws-sa-east-1", ES = "aws-eu-west-1", PT = "aws-eu-west-1" }) },
   ]
 
   secrets = [
@@ -476,6 +490,7 @@ module "security_service" {
     { name = "SMTP_USER", valueFrom = "${local.data_state.security_config_secret_arn}:SMTP_USER::" },
     { name = "SMTP_PASSWORD", valueFrom = "${local.data_state.security_config_secret_arn}:SMTP_PASSWORD::" },
     { name = "SMTP_FROM", valueFrom = "${local.data_state.security_config_secret_arn}:SMTP_FROM::" },
+    { name = "PII_DATA_ENCRYPTION_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:PII_DATA_ENCRYPTION_KEY::" },
     { name = "NEW_RELIC_LICENSE_KEY", valueFrom = "${local.data_state.newrelic_config_secret_arn}:NEW_RELIC_LICENSE_KEY::" },
   ]
 
@@ -528,6 +543,7 @@ module "reservations_service" {
     { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
     { name = "JWT_SECRET_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:JWT_SECRET_KEY::" },
+    { name = "CHECKIN_QR_SECRET_KEY", valueFrom = "${local.data_state.reservations_config_secret_arn}:CHECKIN_QR_SECRET_KEY::" },
     { name = "NEW_RELIC_LICENSE_KEY", valueFrom = "${local.data_state.newrelic_config_secret_arn}:NEW_RELIC_LICENSE_KEY::" },
   ]
 
