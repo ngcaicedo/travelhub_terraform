@@ -25,6 +25,29 @@ resource "aws_appautoscaling_policy" "cpu_target" {
   }
 }
 
+resource "aws_appautoscaling_policy" "request_count_target" {
+  count              = var.request_count_target == null ? 0 : 1
+  name               = "request-count-target-tracking-${var.service_name}"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ALBRequestCountPerTarget"
+      resource_label         = var.request_count_target_group_label
+    }
+    target_value       = var.request_count_target
+    scale_in_cooldown  = var.scale_in_cooldown
+    scale_out_cooldown = var.scale_out_cooldown
+  }
+}
+
 output "scaling_policy_arn" {
   value = aws_appautoscaling_policy.cpu_target.arn
+}
+
+output "request_count_scaling_policy_arn" {
+  value = try(aws_appautoscaling_policy.request_count_target[0].arn, null)
 }

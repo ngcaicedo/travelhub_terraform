@@ -20,4 +20,9 @@ fcm_service_account_json = ""
 # fcm_project_id           = "travelhub-dev-a1b2c"
 # fcm_service_account_json = file("./fcm-service-account.json")
 
+# ---------------------------------------------------------------------------
+# load test. Aplicar SOLO durante la ventana del test; revertir al terminar
+# para evitar costo prolongado. Ver services/load-tests/README.md.
+# ---------------------------------------------------------------------------
+# instance_class = "db.t3.medium"   # default = db.t3.micro
 new_relic_license_key = ""

@@ -47,3 +47,21 @@ variable "desired_count" {
   type    = number
   default = 1
 }
+
+variable "service_min_capacity" {
+  description = "Minimum number of tasks per web service. Bumped to avoid cold-start at test ramp."
+  type        = number
+  default     = 1
+}
+
+variable "service_max_capacity" {
+  description = "Maximum number of tasks per web service."
+  type        = number
+  default     = 15
+}
+
+variable "request_count_per_target" {
+  description = "Target RequestCountPerTarget for ALB-based autoscaling. Null disables this policy."
+  type        = number
+  default     = 50
+}
