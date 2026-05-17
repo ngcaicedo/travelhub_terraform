@@ -26,6 +26,10 @@ output "payments_config_secret_arn" {
   value = module.payments_config.secret_arn
 }
 
+output "newrelic_config_secret_arn" {
+  value = module.newrelic_config.secret_arn
+}
+
 output "redis_host" {
   value = module.elasticache.redis_host
 }

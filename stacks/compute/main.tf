@@ -39,6 +39,7 @@ resource "aws_iam_role_policy" "ecs_secrets_access" {
         data.terraform_remote_state.data.outputs.notifications_config_secret_arn,
         data.terraform_remote_state.data.outputs.payments_config_secret_arn,
         data.terraform_remote_state.data.outputs.properties_config_secret_arn,
+        data.terraform_remote_state.data.outputs.newrelic_config_secret_arn,
       ]
     }]
   })
@@ -417,6 +418,7 @@ module "users_service" {
     { name = "RDS_PORT", value = "5432" },
     { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
     { name = "DEMO_SEED_ENABLED", value = "true" },
+    { name = "NEW_RELIC_APP_NAME", value = "users" },
   ]
 
   secrets = [
@@ -425,6 +427,7 @@ module "users_service" {
     { name = "RDS_PASSWORD", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_PASSWORD::" },
     { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
+    { name = "NEW_RELIC_LICENSE_KEY", valueFrom = "${local.data_state.newrelic_config_secret_arn}:NEW_RELIC_LICENSE_KEY::" },
   ]
 
   project_name       = var.project_name
@@ -458,6 +461,7 @@ module "security_service" {
     { name = "USERS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
     { name = "ALLOWED_CORS_ORIGIN", value = var.cors_allowed_origin },
     { name = "DEMO_SEED_ENABLED", value = "true" },
+    { name = "NEW_RELIC_APP_NAME", value = "security" },
   ]
 
   secrets = [
@@ -472,6 +476,7 @@ module "security_service" {
     { name = "SMTP_USER", valueFrom = "${local.data_state.security_config_secret_arn}:SMTP_USER::" },
     { name = "SMTP_PASSWORD", valueFrom = "${local.data_state.security_config_secret_arn}:SMTP_PASSWORD::" },
     { name = "SMTP_FROM", valueFrom = "${local.data_state.security_config_secret_arn}:SMTP_FROM::" },
+    { name = "NEW_RELIC_LICENSE_KEY", valueFrom = "${local.data_state.newrelic_config_secret_arn}:NEW_RELIC_LICENSE_KEY::" },
   ]
 
   project_name = var.project_name
@@ -513,6 +518,7 @@ module "reservations_service" {
     { name = "PAYMENTS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
     { name = "NOTIFICATIONS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
     { name = "TRAVELHUB_SERVICE_FEE_RATE", value = "0.08" },
+    { name = "NEW_RELIC_APP_NAME", value = "reservations" },
   ]
 
   secrets = [
@@ -522,6 +528,7 @@ module "reservations_service" {
     { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
     { name = "JWT_SECRET_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:JWT_SECRET_KEY::" },
+    { name = "NEW_RELIC_LICENSE_KEY", valueFrom = "${local.data_state.newrelic_config_secret_arn}:NEW_RELIC_LICENSE_KEY::" },
   ]
 
   project_name = var.project_name
@@ -563,6 +570,7 @@ module "payments_service" {
     { name = "AWS_REGION", value = var.region },
     { name = "NOTIFICATIONS_DISPATCH_MODE", value = "sqs" },
     { name = "NOTIFICATIONS_QUEUE_URL", value = local.data_state.notifications_queue_url },
+    { name = "NEW_RELIC_APP_NAME", value = "payments" },
   ]
 
   secrets = [
@@ -571,6 +579,7 @@ module "payments_service" {
     { name = "RDS_PASSWORD", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_PASSWORD::" },
     { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
+    { name = "NEW_RELIC_LICENSE_KEY", valueFrom = "${local.data_state.newrelic_config_secret_arn}:NEW_RELIC_LICENSE_KEY::" },
   ]
 
   project_name = var.project_name
@@ -605,6 +614,7 @@ module "notifications_service" {
     { name = "SES_FROM_ADDRESS", value = local.data_state.ses_sender_email },
     { name = "SES_REGION", value = var.region },
     { name = "JWT_ALGORITHM", value = "HS256" },
+    { name = "NEW_RELIC_APP_NAME", value = "notifications" },
   ]
 
   secrets = [
@@ -621,6 +631,7 @@ module "notifications_service" {
     { name = "SMTP_FROM", valueFrom = "${local.data_state.notifications_config_secret_arn}:SMTP_FROM::" },
     { name = "FCM_PROJECT_ID", valueFrom = "${local.data_state.notifications_config_secret_arn}:FCM_PROJECT_ID::" },
     { name = "FCM_SERVICE_ACCOUNT_JSON", valueFrom = "${local.data_state.notifications_config_secret_arn}:FCM_SERVICE_ACCOUNT_JSON::" },
+    { name = "NEW_RELIC_LICENSE_KEY", valueFrom = "${local.data_state.newrelic_config_secret_arn}:NEW_RELIC_LICENSE_KEY::" },
   ]
 
   project_name = var.project_name
@@ -651,6 +662,7 @@ module "properties_service" {
     # Service-to-service URLs (resolved via the public ALB).
     { name = "SECURITY_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
     { name = "SEARCH_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "NEW_RELIC_APP_NAME", value = "properties" },
   ]
 
   secrets = [
@@ -660,6 +672,7 @@ module "properties_service" {
     { name = "RDS_DB_NAME", valueFrom = "${local.data_state.rds_credentials_secret_arn}:RDS_DB_NAME::" },
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
     { name = "PRICING_INTEGRITY_SECRET", valueFrom = "${local.data_state.properties_config_secret_arn}:PRICING_INTEGRITY_SECRET::" },
+    { name = "NEW_RELIC_LICENSE_KEY", valueFrom = "${local.data_state.newrelic_config_secret_arn}:NEW_RELIC_LICENSE_KEY::" },
   ]
 
   project_name = var.project_name
@@ -695,6 +708,7 @@ module "notifications_worker_service" {
     { name = "SES_REGION", value = var.region },
     { name = "PAYMENTS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
     { name = "USERS_SERVICE_URL", value = "http://${module.alb.alb_dns_name}" },
+    { name = "NEW_RELIC_APP_NAME", value = "notifications-worker" },
   ]
 
   secrets = [
@@ -713,6 +727,7 @@ module "notifications_worker_service" {
     # arrival reminder + booking events never reach the device.
     { name = "FCM_PROJECT_ID", valueFrom = "${local.data_state.notifications_config_secret_arn}:FCM_PROJECT_ID::" },
     { name = "FCM_SERVICE_ACCOUNT_JSON", valueFrom = "${local.data_state.notifications_config_secret_arn}:FCM_SERVICE_ACCOUNT_JSON::" },
+    { name = "NEW_RELIC_LICENSE_KEY", valueFrom = "${local.data_state.newrelic_config_secret_arn}:NEW_RELIC_LICENSE_KEY::" },
   ]
 
   project_name = var.project_name
@@ -745,10 +760,12 @@ module "search_service" {
     { name = "REDIS_HOST", value = local.data_state.redis_host },
     { name = "REDIS_PORT", value = tostring(local.data_state.redis_port) },
     { name = "REDIS_DB", value = "0" },
+    { name = "NEW_RELIC_APP_NAME", value = "search" },
   ]
 
   secrets = [
     { name = "INTERNAL_API_KEY", valueFrom = "${local.data_state.security_config_secret_arn}:INTERNAL_API_KEY::" },
+    { name = "NEW_RELIC_LICENSE_KEY", valueFrom = "${local.data_state.newrelic_config_secret_arn}:NEW_RELIC_LICENSE_KEY::" },
   ]
 
   project_name = var.project_name

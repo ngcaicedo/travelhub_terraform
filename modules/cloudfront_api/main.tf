@@ -38,11 +38,11 @@ resource "aws_cloudfront_distribution" "api" {
   }
 
   default_cache_behavior {
-    target_origin_id          = "alb-api"
-    viewer_protocol_policy    = "redirect-to-https"
-    allowed_methods           = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods            = ["GET", "HEAD"]
-    compress                  = false
+    target_origin_id           = "alb-api"
+    viewer_protocol_policy     = "redirect-to-https"
+    allowed_methods            = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods             = ["GET", "HEAD"]
+    compress                   = false
     response_headers_policy_id = aws_cloudfront_response_headers_policy.cors.id
 
     # Disable caching — forward everything to ALB as-is

@@ -121,3 +121,10 @@ variable "fcm_service_account_json" {
   sensitive   = true
   default     = ""
 }
+
+variable "new_relic_license_key" {
+  description = "New Relic license key for APM agent data ingestion"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
