@@ -1,0 +1,145 @@
+variable "service_name" {
+  description = "Name of the ECS service"
+  type        = string
+}
+
+variable "cluster_id" {
+  description = "ECS cluster ID"
+  type        = string
+}
+
+variable "cluster_name" {
+  description = "ECS cluster name used by Application Auto Scaling"
+  type        = string
+}
+
+variable "task_cpu" {
+  description = "Task CPU units"
+  type        = string
+  default     = "512"
+}
+
+variable "task_memory" {
+  description = "Task memory in MiB"
+  type        = string
+  default     = "1024"
+}
+
+variable "container_port" {
+  description = "Container port"
+  type        = number
+}
+
+variable "ecr_image_url" {
+  description = "ECR image URL (repo:tag)"
+  type        = string
+}
+
+variable "desired_count" {
+  description = "Desired number of tasks"
+  type        = number
+  default     = 1
+}
+
+variable "subnet_ids" {
+  description = "List of subnet IDs for the ECS tasks"
+  type        = list(string)
+}
+
+variable "security_group_id" {
+  description = "Security group ID for the ECS tasks"
+  type        = string
+}
+
+variable "target_group_arn" {
+  description = "ALB target group ARN. Set to null for worker services without an ALB."
+  type        = string
+  default     = null
+}
+
+variable "execution_role_arn" {
+  description = "ECS task execution role ARN"
+  type        = string
+}
+
+variable "task_role_arn" {
+  description = "ECS task role ARN (optional)"
+  type        = string
+  default     = null
+}
+
+variable "environment_variables" {
+  description = "List of environment variables for the container"
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  default = []
+}
+
+variable "secrets" {
+  description = "List of secrets from Secrets Manager/SSM for the container"
+  type = list(object({
+    name      = string
+    valueFrom = string
+  }))
+  default = []
+}
+
+variable "project_name" {
+  description = "Project name for resource naming"
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment name"
+  type        = string
+}
+
+variable "region" {
+  description = "AWS region for CloudWatch logs"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "min_capacity" {
+  description = "Minimum number of ECS tasks for autoscaling."
+  type        = number
+  default     = 1
+}
+
+variable "max_capacity" {
+  description = "Maximum number of ECS tasks for autoscaling."
+  type        = number
+  default     = 10
+}
+
+variable "cpu_target_value" {
+  description = "Target CPU utilization percentage for autoscaling."
+  type        = number
+  default     = 70
+}
+
+variable "scale_in_cooldown" {
+  description = "Cooldown period (seconds) after scale-in."
+  type        = number
+  default     = 300
+}
+
+variable "scale_out_cooldown" {
+  description = "Cooldown period (seconds) after scale-out."
+  type        = number
+  default     = 60
+}
+
+variable "request_count_target" {
+  description = "Target requests per task for ALBRequestCountPerTarget scaling. Null disables this policy."
+  type        = number
+  default     = null
+}
+
+variable "request_count_target_group_label" {
+  description = "ALB+TG identifier ('app/<alb-suffix>/<tg-suffix>') required when request_count_target is set."
+  type        = string
+  default     = null
+}

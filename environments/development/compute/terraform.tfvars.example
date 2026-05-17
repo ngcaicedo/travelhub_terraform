@@ -1,0 +1,16 @@
+environment   = "development"
+state_bucket  = "travelhub-terraform-state-<AWS_ACCOUNT_ID>"
+desired_count = 1
+
+# Las alarmas CloudWatch ECS se crean por defecto desde el stack compute.
+# Define `alarms` solo si necesitas sobrescribir el comportamiento.
+
+# ---------------------------------------------------------------------------
+# MPF-74 (HU-ARQ-04: gestión de sesiones en alta demanda) — overrides para
+# load test. Aplicar SOLO durante la ventana del test; revertir al terminar
+# para evitar costo prolongado. Ver services/load-tests/README.md.
+# ---------------------------------------------------------------------------
+# service_min_capacity     = 1     # default = 1;
+# service_max_capacity     = 15    # default = 10; headroom para el peak
+# request_count_per_target = 50    # null por default; activa autoscaling
+                                   # adicional por ALBRequestCountPerTarget
