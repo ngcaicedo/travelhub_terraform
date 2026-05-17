@@ -14,12 +14,28 @@ output "security_config_secret_arn" {
   value = module.security_config.secret_arn
 }
 
+output "users_config_secret_arn" {
+  value = module.users_config.secret_arn
+}
+
+output "reservations_config_secret_arn" {
+  value = module.reservations_config.secret_arn
+}
+
+output "properties_config_secret_arn" {
+  value = module.properties_config.secret_arn
+}
+
 output "notifications_config_secret_arn" {
   value = module.notifications_config.secret_arn
 }
 
 output "payments_config_secret_arn" {
   value = module.payments_config.secret_arn
+}
+
+output "newrelic_config_secret_arn" {
+  value = module.newrelic_config.secret_arn
 }
 
 output "redis_host" {

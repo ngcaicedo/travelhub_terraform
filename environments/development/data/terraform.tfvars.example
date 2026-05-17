@@ -3,6 +3,11 @@ state_bucket        = "travelhub-terraform-state-<AWS_ACCOUNT_ID>"
 db_password         = "CHANGE_ME"
 jwt_secret_key      = "CHANGE_ME"
 internal_api_key    = "CHANGE_ME"
+pricing_integrity_secret = "CHANGE_ME"
+checkin_qr_secret_key          = "CHANGE_ME"
+pii_data_encryption_key        = "CHANGE_ME"
+users_pii_encryption_key       = "CHANGE_ME"
+users_email_lookup_hash_secret = "CHANGE_ME"
 smtp_host           = "smtp.gmail.com"
 smtp_port           = "587"
 smtp_user           = "CHANGE_ME"
@@ -20,3 +25,4 @@ fcm_service_account_json = ""
 # para evitar costo prolongado. Ver services/load-tests/README.md.
 # ---------------------------------------------------------------------------
 # instance_class = "db.t3.medium"   # default = db.t3.micro
+new_relic_license_key = ""

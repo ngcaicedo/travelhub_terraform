@@ -47,13 +47,51 @@ module "security_config" {
 
   secret_name = "${var.project_name}/${var.environment}/security/config"
   secret_values = {
-    JWT_SECRET_KEY   = var.jwt_secret_key
-    INTERNAL_API_KEY = var.internal_api_key
-    SMTP_HOST        = var.smtp_host
-    SMTP_PORT        = var.smtp_port
-    SMTP_USER        = var.smtp_user
-    SMTP_PASSWORD    = var.smtp_password
-    SMTP_FROM        = var.smtp_from
+    JWT_SECRET_KEY          = var.jwt_secret_key
+    INTERNAL_API_KEY        = var.internal_api_key
+    SMTP_HOST               = var.smtp_host
+    SMTP_PORT               = var.smtp_port
+    SMTP_USER               = var.smtp_user
+    SMTP_PASSWORD           = var.smtp_password
+    SMTP_FROM               = var.smtp_from
+    PII_DATA_ENCRYPTION_KEY = var.pii_data_encryption_key
+  }
+
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+module "users_config" {
+  source = "../../modules/secrets_manager"
+
+  secret_name = "${var.project_name}/${var.environment}/users/config"
+  secret_values = {
+    USERS_PII_ENCRYPTION_KEY       = var.users_pii_encryption_key
+    USERS_EMAIL_LOOKUP_HASH_SECRET = var.users_email_lookup_hash_secret
+  }
+
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+module "reservations_config" {
+  source = "../../modules/secrets_manager"
+
+  secret_name = "${var.project_name}/${var.environment}/reservations/config"
+  secret_values = {
+    CHECKIN_QR_SECRET_KEY = var.checkin_qr_secret_key
+  }
+
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+module "properties_config" {
+  source = "../../modules/secrets_manager"
+
+  secret_name = "${var.project_name}/${var.environment}/properties/config"
+  secret_values = {
+    PRICING_INTEGRITY_SECRET = var.pricing_integrity_secret
   }
 
   project_name = var.project_name
@@ -85,6 +123,18 @@ module "payments_config" {
   secret_values = {
     STRIPE_SECRET_KEY        = var.stripe_secret_key
     PAYMENT_INTEGRITY_SECRET = var.payment_integrity_secret
+  }
+
+  project_name = var.project_name
+  environment  = var.environment
+}
+
+module "newrelic_config" {
+  source = "../../modules/secrets_manager"
+
+  secret_name = "${var.project_name}/${var.environment}/newrelic/config"
+  secret_values = {
+    NEW_RELIC_LICENSE_KEY = var.new_relic_license_key
   }
 
   project_name = var.project_name

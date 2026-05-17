@@ -61,6 +61,12 @@ variable "internal_api_key" {
   sensitive = true
 }
 
+variable "pricing_integrity_secret" {
+  description = "HMAC-SHA256 secret used by properties to sign seasonal pricing rows."
+  type        = string
+  sensitive   = true
+}
+
 variable "smtp_host" {
   type    = string
   default = "smtp.gmail.com"
@@ -114,4 +120,35 @@ variable "fcm_service_account_json" {
   type        = string
   sensitive   = true
   default     = ""
+}
+
+variable "new_relic_license_key" {
+  description = "New Relic license key for APM agent data ingestion"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "checkin_qr_secret_key" {
+  description = "AES-GCM key used by reservations to encrypt check-in QR payloads."
+  type        = string
+  sensitive   = true
+}
+
+variable "pii_data_encryption_key" {
+  description = "Encryption key for PII handled by the security service privacy controls."
+  type        = string
+  sensitive   = true
+}
+
+variable "users_pii_encryption_key" {
+  description = "Encryption key used by users service to cipher PII at rest."
+  type        = string
+  sensitive   = true
+}
+
+variable "users_email_lookup_hash_secret" {
+  description = "HMAC secret used by users service to build deterministic email lookup hashes."
+  type        = string
+  sensitive   = true
 }
